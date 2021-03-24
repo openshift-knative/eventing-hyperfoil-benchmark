@@ -1,0 +1,48 @@
+# This is the name of the benchmark. It's recommended to keep this in sync with
+# name of this file, adding extension `.hf.yaml`.
+name: ce-requests
+# We must define at least one HTTP target, in this case it becomes a default
+# for all HTTP requests.
+http:
+  host: http://localhost:9000
+# Simulation consists of phases - potentially independent workloads.
+# We'll discuss phases more in detail in next quickstarts.
+phases:
+  # `example` is the name of the single phase in this benchmark.
+  - run:
+      constantRate:
+        usersPerSec: 50
+        maxSessions: 200
+        duration: 30s
+        scenario:
+          # The only sequence in this scenario is called `test`.
+          - sendDataPointsEvents:
+              - httpRequest:
+                  POST: /
+                  headers:
+                    ce-id: "abc"
+                    ce-source: "http://hyperfoil-bench.com"
+                    ce-type: "datapoint.hyperfoilbench"
+                    ce-specversion: "1.0"
+                    content-type: "application/json"
+                  body: |
+                    {
+                       "foo" : "bar"
+                    }
+  - sendStopSignal:
+      constantRate:
+        usersPerSec: 1
+        duration: 10s
+        maxIterations: 10
+        startAfter: run
+        scenario:
+          # The only sequence in this scenario is called `test`.
+          - sendStopEvent:
+              - httpRequest:
+                  POST: /
+                  headers:
+                    ce-id: "abc"
+                    ce-source: "http://hyperfoil-bench.com"
+                    ce-type: "stop.hyperfoilbench"
+                    ce-specversion: "1.0"
+
