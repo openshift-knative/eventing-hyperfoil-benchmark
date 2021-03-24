@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: receiver
+spec:
+  selector:
+    app: receiver
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: receiver
+  labels:
+    app: receiver
+spec:
+  containers:
+    - name: receiver
+      image: docker.io/slinkydeveloper/eventing-hyperfoil-benchmark-vertx-receiver
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: receiver
