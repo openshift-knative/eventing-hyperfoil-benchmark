@@ -1,34 +1,38 @@
-# This is the name of the benchmark. It's recommended to keep this in sync with
-# name of this file, adding extension `.hf.yaml`.
 name: ce-requests
-# We must define at least one HTTP target, in this case it becomes a default
-# for all HTTP requests.
 http:
   host: http://localhost:9000
-# Simulation consists of phases - potentially independent workloads.
-# We'll discuss phases more in detail in next quickstarts.
 phases:
-  # `example` is the name of the single phase in this benchmark.
+  # Send data points
   - run:
       constantRate:
         usersPerSec: 50
         maxSessions: 200
         duration: 30s
         scenario:
-          # The only sequence in this scenario is called `test`.
+          # TODO We need to record 202s and wait for all responses
           - sendDataPointsEvents:
+              # TODO how do i put the timestamp in the ce-benchmarktimestamp header?
+              - randomInt:
+                  toVar: eventId
               - httpRequest:
                   POST: /
                   headers:
-                    ce-id: "abc"
+                    ce-id:
+                      # Even if we have collisions here, it doesn't matter to eventing,
+                      # BUT this might be used to record lost events somehow?
+                      fromVar: eventId
                     ce-source: "http://hyperfoil-bench.com"
                     ce-type: "datapoint.hyperfoilbench"
                     ce-specversion: "1.0"
+                    ce-benchmarktimestamp:
+                      fromVar: abc
                     content-type: "application/json"
                   body: |
                     {
                        "foo" : "bar"
                     }
+              - awaitAllResponses
+  # Send stop signal after the run is done
   - sendStopSignal:
       constantRate:
         usersPerSec: 1
@@ -36,7 +40,6 @@ phases:
         maxIterations: 10
         startAfter: run
         scenario:
-          # The only sequence in this scenario is called `test`.
           - sendStopEvent:
               - httpRequest:
                   POST: /
