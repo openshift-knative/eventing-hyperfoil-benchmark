@@ -1,6 +1,6 @@
 name: ce-requests
 http:
-  host: http://localhost:9000
+  host: http://localhost:8080
 phases:
   # Send data points
   - run:
@@ -11,21 +11,20 @@ phases:
         scenario:
           # TODO We need to record 202s and wait for all responses
           - sendDataPointsEvents:
-              # TODO how do i put the timestamp in the ce-benchmarktimestamp header?
-              - randomInt:
-                  toVar: eventId
+              - timestamp:
+                  toVar: eventTimestamp
               - httpRequest:
                   POST: /
                   headers:
-                    ce-id:
-                      # Even if we have collisions here, it doesn't matter to eventing,
-                      # BUT this might be used to record lost events somehow?
-                      fromVar: eventId
+                    # Even if we use always the same id, it doesn't matter to eventing,
+                    # BUT this might be used to record lost events somehow?
+                    # This is a useful metric, but can hyperfoil support it?
+                    # And how the receiver can support it?
+                    ce-id: "abc"
                     ce-source: "http://hyperfoil-bench.com"
                     ce-type: "datapoint.hyperfoilbench"
                     ce-specversion: "1.0"
-                    ce-benchmarktimestamp:
-                      fromVar: abc
+                    ce-benchmarktimestamp: ${eventTimestamp}
                     content-type: "application/json"
                   body: |
                     {
@@ -34,10 +33,8 @@ phases:
               - awaitAllResponses
   # Send stop signal after the run is done
   - sendStopSignal:
-      constantRate:
-        usersPerSec: 1
-        duration: 10s
-        maxIterations: 10
+      atOnce:
+        users: 1
         startAfter: run
         scenario:
           - sendStopEvent:

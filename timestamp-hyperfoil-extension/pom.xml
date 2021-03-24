@@ -4,27 +4,31 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.slinkydeveloper</groupId>
-    <artifactId>eventing-hyperfoil-benchmark-vertx-receiver</artifactId>
+    <groupId>org.example</groupId>
+    <artifactId>timestamp-hyperfoil-extension</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
-        <vertx.version>4.0.2</vertx.version>
-        <hdrhistogram.version>2.1.12</hdrhistogram.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-core</artifactId>
-            <version>${vertx.version}</version>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-api</artifactId>
+            <version>0.14</version>
         </dependency>
         <dependency>
-            <groupId>org.hdrhistogram</groupId>
-            <artifactId>HdrHistogram</artifactId>
-            <version>${hdrhistogram.version}</version>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-core</artifactId>
+            <version>0.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <optional>true</optional>
+            <version>1.8</version>
         </dependency>
     </dependencies>
 
