@@ -16,6 +16,10 @@ phases:
               - httpRequest:
                   POST: /
                   headers:
+                    # This is an hacky hack for executing imc-test-config without running hyperfoil in Kube
+                    # THIS IS NOT NEEDED if hyperfoil runs in kube, you just need to point the root host to the channel address
+                    #host: testchannel-kn-channel.default.svc.cluster.local
+
                     # Even if we use always the same id, it doesn't matter to eventing,
                     # BUT this might be used to record lost events somehow?
                     # This is a useful metric, but can hyperfoil support it?
@@ -41,6 +45,10 @@ phases:
               - httpRequest:
                   POST: /
                   headers:
+                    # This is an hacky hack for executing imc-test-config without running hyperfoil in Kube
+                    # THIS IS NOT NEEDED if hyperfoil runs in kube, you just need to point the root host to the channel address
+                    #host: testchannel-kn-channel.default.svc.cluster.local
+
                     ce-id: "abc"
                     ce-source: "http://hyperfoil-bench.com"
                     ce-type: "stop.hyperfoilbench"

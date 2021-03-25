@@ -3,8 +3,6 @@ package com.slinkydeveloper.eventing.hyperfoil.benchmark;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import org.HdrHistogram.Histogram;
 
@@ -23,6 +21,7 @@ public class VertxReceiverVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) {
+    vertx.setPeriodic(1000, v -> printStats());
     vertx.createHttpServer()
         .requestHandler(this::handleRequest)
         .listen(8080)
@@ -54,7 +53,8 @@ public class VertxReceiverVerticle extends AbstractVerticle {
 
   private void printStats() {
     System.out.printf(
-        "Mean: %f, std-deviation: %f\n",
+        "Now: %d, Mean: %f, std-deviation: %f\n",
+        System.currentTimeMillis(),
         this.histogram.getMean(),
         this.histogram.getStdDeviation()
     );
