@@ -2,6 +2,7 @@ name: ce-requests
 http:
   host: http://localhost:8080
 phases:
+  # TODO how to implement the warmup phase? Does the receiver need to have any knowledge about it?
   # Send data points
   - run:
       constantRate:
@@ -35,9 +36,12 @@ phases:
                        "foo" : "bar"
                     }
               - awaitAllResponses
+  # TODO Before sending the stop signal, i think we should wait a bit, in case there was a lot of enqueuing
   # Send stop signal after the run is done
   - sendStopSignal:
       atOnce:
+        # TODO I think we should send the stop signal several times, just in case the first one get lost.
+        # But we can ignore every failure at this point.
         users: 1
         startAfter: run
         scenario:
