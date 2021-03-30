@@ -21,9 +21,15 @@ metadata:
     app: receiver
 spec:
   containers:
-    - name: receiver
-      image: docker.io/slinkydeveloper/eventing-hyperfoil-benchmark-vertx-receiver
-      ports:
-        - containerPort: 8080
-          protocol: TCP
-          name: receiver
+  - name: receiver
+    image: quay.io/rvansa/eventing-hyperfoil-benchmark-vertx-receiver
+    imagePullPolicy: Always
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+      name: receiver
+    env:
+    - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
+      value: hyperfoil-cluster.hyperfoil.svc.cluster.local
+    - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
+      value: "7800"

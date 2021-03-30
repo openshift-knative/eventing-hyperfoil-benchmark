@@ -1,6 +1,8 @@
 name: ce-requests
+agents:
+  agent-one:
 http:
-  host: http://localhost:8080
+  host: http://imc-dispatcher.knative-eventing.svc.cluster.local
 phases:
   # TODO how to implement the warmup phase? Does the receiver need to have any knowledge about it?
   # Send data points
@@ -17,10 +19,6 @@ phases:
               - httpRequest:
                   POST: /
                   headers:
-                    # This is an hacky hack for executing imc-test-config without running hyperfoil in Kube
-                    # THIS IS NOT NEEDED if hyperfoil runs in kube, you just need to point the root host to the channel address
-                    #host: testchannel-kn-channel.default.svc.cluster.local
-
                     # Even if we use always the same id, it doesn't matter to eventing,
                     # BUT this might be used to record lost events somehow?
                     # This is a useful metric, but can hyperfoil support it?
@@ -30,31 +28,11 @@ phases:
                     ce-type: "datapoint.hyperfoilbench"
                     ce-specversion: "1.0"
                     ce-benchmarktimestamp: ${eventTimestamp}
+                    ce-phase: ${hyperfoil.phase.id}
+                    ce-runId: ${hyperfoil.run.id}
+                    ce-metric: cloudevents
                     content-type: "application/json"
                   body: |
                     {
                        "foo" : "bar"
                     }
-              - awaitAllResponses
-  # TODO Before sending the stop signal, i think we should wait a bit, in case there was a lot of enqueuing
-  # Send stop signal after the run is done
-  - sendStopSignal:
-      atOnce:
-        # TODO I think we should send the stop signal several times, just in case the first one get lost.
-        # But we can ignore every failure at this point.
-        users: 1
-        startAfter: run
-        scenario:
-          - sendStopEvent:
-              - httpRequest:
-                  POST: /
-                  headers:
-                    # This is an hacky hack for executing imc-test-config without running hyperfoil in Kube
-                    # THIS IS NOT NEEDED if hyperfoil runs in kube, you just need to point the root host to the channel address
-                    #host: testchannel-kn-channel.default.svc.cluster.local
-
-                    ce-id: "abc"
-                    ce-source: "http://hyperfoil-bench.com"
-                    ce-type: "stop.hyperfoilbench"
-                    ce-specversion: "1.0"
-
