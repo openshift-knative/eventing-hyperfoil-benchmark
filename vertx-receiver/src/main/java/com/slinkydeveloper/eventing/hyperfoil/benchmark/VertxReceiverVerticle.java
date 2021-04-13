@@ -67,7 +67,7 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
     }
 
     stats.incrementRequests(sendTimestamp);
-    stats.recordResponse(sendTimestamp, 0, TimeUnit.MILLISECONDS.toNanos(now - sendTimestamp));
+    stats.recordResponse(sendTimestamp, TimeUnit.MILLISECONDS.toNanos(now - sendTimestamp));
     request.response().setStatusCode(202).end();
   }
 
