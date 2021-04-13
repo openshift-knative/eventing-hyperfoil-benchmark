@@ -16,10 +16,18 @@ import io.vertx.core.http.HttpServerRequest;
 
 public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
 
+  /**
+   * Using this environment variable you can append to each metric name a value, for example to identify the
+   * instance name. In multiple subscribers case, the suffix might be the trigger name, in order to have a metric for each trigger.
+   */
+  private final static String METRIC_SUFFIX_ENV = "METRIC_SUFFIX";
+
   private final static String CE_BENCHMARK_TIMESTAMP_EXTENSION = "ce-benchmarktimestamp";
   private final static String CE_PHASE = "ce-phase";
-  private final static String CE_RUNID = "ce-runId";
+  private final static String CE_RUNID = "ce-runid";
   private final static String CE_METRIC = "ce-metric";
+
+  private final String metricsSuffix;
 
   private String runId;
   private String phaseId;
@@ -27,9 +35,14 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
   private Statistics stats;
   private boolean recorded = false;
 
+  public VertxReceiverVerticle() {
+    this.metricsSuffix = System.getenv(METRIC_SUFFIX_ENV) != null ? System.getenv(METRIC_SUFFIX_ENV) : "";
+  }
+
   @Override
   public void start(Promise<Void> startPromise) {
     start();
+
     vertx.setPeriodic(1000, v -> sendStats());
     vertx.createHttpServer()
         .requestHandler(this::handleRequest)
@@ -53,7 +66,7 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
 
     String runId = request.getHeader(CE_RUNID);
     String phaseId = request.getHeader(CE_PHASE);
-    String metric = request.getHeader(CE_METRIC);
+    String metric = request.getHeader(CE_METRIC) + metricsSuffix;
     if (stats == null || !Objects.equals(runId, this.runId) || !Objects.equals(phaseId, this.phaseId)|| !Objects.equals(metric, this.metric)) {
       log.info("Starting data for run {}, phase {}, metric {}, first timestamp is {}", runId, phaseId, metric, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S").format(new Date(sendTimestamp)));
       this.runId = runId;
