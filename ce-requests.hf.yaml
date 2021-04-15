@@ -29,7 +29,7 @@ phases:
                     ce-specversion: "1.0"
                     ce-benchmarktimestamp: ${eventTimestamp}
                     ce-phase: ${hyperfoil.phase.id}
-                    ce-runId: ${hyperfoil.run.id}
+                    ce-runid: ${hyperfoil.run.id}
                     ce-metric: cloudevents
                     content-type: "application/json"
                   body: |
