@@ -8,4 +8,4 @@ Broker uses a default Kafka channel, no extra configurations like `numPartitions
 
 ## Trigger
 
-No filtering on event types or other metadata, all wevents are routed to a `v1` kubernetes `Service`, which represents the Hyperfoil receiver.
+No filtering on event types or other metadata, all events are routed to a `v1` kubernetes `Service`, which represents the Hyperfoil receiver.
