@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-kafkachannel-advanced-broker
+data:
+  channelTemplateSpec: |-
+    apiVersion: messaging.knative.dev/v1beta1
+    kind: KafkaChannel
+    spec:
+        numPartitions: 10
+        replicationFactor: 2
+        delivery:
+          retry: 12
+          backoffPolicy: exponential
+          backoffDelay: PT1S
+---
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: my-kafkachannel-advanced-broker
+spec:
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: my-kafkachannel-broker
