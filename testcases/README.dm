@@ -15,3 +15,4 @@ Setup using the default `Broker` implementation, backed with by different channe
 
 * Broker backed by `InMemoryChannel` ([here](./broker-imc-config))
 * Broker backed by `KafkaMemoryChannel` ([here](./broker-kc-config))
+* Advanced Broker Configuration backed by `KafkaMemoryChannel` ([here](./broker-kc-advanced-config))
