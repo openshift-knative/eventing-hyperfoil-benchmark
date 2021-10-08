@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.slinkydeveloper</groupId>
+    <groupId>io.openshift.serverless.knative</groupId>
     <artifactId>eventing-hyperfoil-benchmark-vertx-receiver</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <hyperfoil.version>0.15</hyperfoil.version>
+        <hyperfoil.version>0.16</hyperfoil.version>
     </properties>
 
     <dependencies>
@@ -42,7 +42,7 @@
                         <image>openjdk:17</image>
                     </from>
                     <to>
-                        <image>quay.io/rvansa/eventing-hyperfoil-benchmark-vertx-receiver</image>
+                        <image>quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver</image>
                     </to>
                     <container>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
