@@ -1,0 +1,18 @@
+aliases:
+  eventing-approvers:
+  - alanfx
+  - aliok
+  - devguyio
+  - jcrossley3
+  - lberk
+  - markusthoemmes
+  - matzew
+  - mgencur
+  - pierDipi
+  - skonto
+  eventing-reviewers:
+  - aliok
+  - devguyio
+  - lberk
+  - matzew
+  - pierDipi
