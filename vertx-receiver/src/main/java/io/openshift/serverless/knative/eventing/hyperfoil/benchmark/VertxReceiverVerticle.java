@@ -1,4 +1,4 @@
-package com.slinkydeveloper.eventing.hyperfoil.benchmark;
+package io.openshift.serverless.knative.eventing.hyperfoil.benchmark;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
