@@ -16,3 +16,4 @@ Setup using the default `Broker` implementation, backed with by different channe
 * Broker backed by `InMemoryChannel` ([here](./broker-imc-config))
 * Broker backed by `KafkaChannel` ([here](./broker-kc-config))
 * Advanced Broker Configuration backed by `KafkaChannel` ([here](./broker-kc-advanced-config))
+* Broker backed by Apache Kafka, with no backing `Channel` ([here](./kafka-broker-config))
