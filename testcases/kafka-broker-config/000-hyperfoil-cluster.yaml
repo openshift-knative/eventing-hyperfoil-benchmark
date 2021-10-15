@@ -1,0 +1,20 @@
+# TODO: HF operator should create this service automatically, soon...
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hyperfoil-cluster
+  name: hyperfoil-cluster
+  namespace: hyperfoil
+spec:
+  clusterIP: None
+  ports:
+  - name: 7800-7800
+    port: 7800
+    protocol: TCP
+    targetPort: 7800
+  selector:
+    app: hyperfoil
+    role: controller
+  sessionAffinity: None
+  type: ClusterIP
