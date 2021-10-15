@@ -1,4 +1,4 @@
-#Simple Apache Kafka based Broker Performance test
+# Simple Apache Kafka based Broker Performance test
 
 Configuration for a testing the _Knative-Kafka-based_ `Broker`, directly backed by _Apache Kafka_ and _no_ Knative `Channel` implementation.
 
