@@ -14,6 +14,7 @@ import io.hyperfoil.api.statistics.StatisticsSnapshot;
 import io.hyperfoil.clustering.BaseAuxiliaryVerticle;
 import io.hyperfoil.clustering.Feeds;
 import io.hyperfoil.clustering.messages.DelayStatsCompletionMessage;
+import io.hyperfoil.clustering.messages.ErrorMessage;
 import io.hyperfoil.clustering.messages.RequestStatsMessage;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
@@ -23,13 +24,27 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
   private final static long GARBAGE_COLLECTION_PERIOD = Long.getLong("receiver.gc.period", 60000);
   private final static long COMPLETION_DELAY_REQUEST_PERIOD = Long.getLong("receiver.gc.period", 5000);
 
+  /**
+   * Using this environment variable you can append to each metric name a value, for example to identify the
+   * instance name. In multiple subscribers case, the suffix might be the trigger name, in order to have a metric for each trigger.
+   */
+  private final static String METRIC_SUFFIX_ENV = "METRIC_SUFFIX";
+
   private final static String CE_BENCHMARK_TIMESTAMP_EXTENSION = "ce-benchmarktimestamp";
   private final static String CE_PHASE_START_TIMESTAMP = "ce-phasestart";
   private final static String CE_PHASE = "ce-phase";
   private final static String CE_RUNID = "ce-runId";
   private final static String CE_METRIC = "ce-metric";
 
+  private final String metricsSuffix;
+
+  private String timeSyncErrorId = null;
+
   private final List<PhaseStats> phaseStats = new ArrayList<>();
+
+  public VertxReceiverVerticle() {
+    this.metricsSuffix = System.getenv(METRIC_SUFFIX_ENV) != null ? System.getenv(METRIC_SUFFIX_ENV) : "";
+  }
 
   @Override
   public void start(Promise<Void> startPromise) {
@@ -69,8 +84,9 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
 
     String runId = request.getHeader(CE_RUNID);
     String phaseId = request.getHeader(CE_PHASE);
-    String metric = request.getHeader(CE_METRIC);
+    String metric = request.getHeader(CE_METRIC) + metricsSuffix;
     PhaseStats found = null;
+
     for (PhaseStats ps : phaseStats) {
       if (Objects.equals(runId, ps.runId) && Objects.equals(phaseId, ps.phaseId) && Objects.equals(metric, ps.metric)) {
         found = ps;
@@ -84,10 +100,18 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
       found = new PhaseStats(runId, phaseId, metric, startTimestamp);
       phaseStats.add(0, found);
     }
+    long duration = now - sendTimestamp;
+    if (duration < 0) {
+      if (!runId.equals(timeSyncErrorId)) {
+        timeSyncErrorId = runId;
+        vertx.eventBus().send(Feeds.RESPONSE, new ErrorMessage(deploymentID(), runId, new RuntimeException("wall time discrepancy created negative duration "+duration+"ms"), false));
+      }
+      duration = 0;
+    }
     found.recordedForGc = true;
     found.recordedForDelay = true;
     found.stats.incrementRequests(sendTimestamp);
-    found.stats.recordResponse(sendTimestamp,  TimeUnit.MILLISECONDS.toNanos(Math.max(0, now - sendTimestamp)));
+    found.stats.recordResponse(sendTimestamp,  TimeUnit.MILLISECONDS.toNanos(duration));
     request.response().setStatusCode(202).end();
   }
 
@@ -111,7 +135,6 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
     Hyperfoil.clusteredVertx(false)
           .onSuccess(vertx -> vertx.deployVerticle(VertxReceiverVerticle.class, new DeploymentOptions()));
   }
-
   public static class PhaseStats {
     private final String runId;
     private final String phaseId;
