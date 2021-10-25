@@ -4,7 +4,6 @@ metadata:
   annotations:
     # case-sensitive
     eventing.knative.dev/broker.class: Kafka
-  namespace: default
   name: my-kafka-broker
 spec:
   # Configuration specific to this broker.
