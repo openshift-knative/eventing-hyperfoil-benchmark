@@ -26,4 +26,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Build the Hyperfoil Receiver image
-        run: mvn clean install
+        run: cd vertx-receiver && mvn clean install
