@@ -1,9 +1,6 @@
-name: CI Hyperfoil Image build
+name: CI Hyperfoil Image build for pull requests
 
 on:
-  push:
-    branches:
-      - "main"
   pull_request:
     branches:
       - "main"
