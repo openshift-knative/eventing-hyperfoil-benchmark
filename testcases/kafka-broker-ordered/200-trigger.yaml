@@ -5,7 +5,7 @@ metadata:
   annotations:
     kafka.eventing.knative.dev/delivery.order: ordered
 spec:
-  broker: my-kafka-broker 
+  broker: kafka-broker-ordered
   subscriber:
     ref:
       apiVersion: v1

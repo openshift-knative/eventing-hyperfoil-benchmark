@@ -4,7 +4,7 @@ metadata:
   annotations:
     # case-sensitive
     eventing.knative.dev/broker.class: Kafka
-  name: my-kafka-broker
+  name: kafka-broker-ordered
 spec:
   # Configuration specific to this broker.
   config:
