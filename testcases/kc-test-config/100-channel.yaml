@@ -4,4 +4,4 @@ metadata:
   name: simplekafkatestchannel
 spec:
   numPartitions: 10
-  replicationFactor: 3
+  replicationFactor: 1
