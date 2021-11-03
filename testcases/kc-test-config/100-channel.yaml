@@ -3,5 +3,5 @@ kind: KafkaChannel
 metadata:
   name: simplekafkatestchannel
 spec:
-  numPartitions: 1
-  replicationFactor: 1
+  numPartitions: 10
+  replicationFactor: 3
