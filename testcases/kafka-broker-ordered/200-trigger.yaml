@@ -1,0 +1,13 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: trigger-ordered-all-events-for-kafka-broker
+  annotations:
+    kafka.eventing.knative.dev/delivery.order: ordered
+spec:
+  broker: kafka-broker-ordered
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: receiver
