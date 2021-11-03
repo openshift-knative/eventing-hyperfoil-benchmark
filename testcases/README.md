@@ -7,7 +7,8 @@ This folder contains different aspects for the _System under test_ and their var
 Setup using the `Channel` implementations and `Subscription` API to deliver their events.
 
 * `InMemoryChannel` and a single Subscription ([here](./imc-test-config))
-* Default `KafkaChannel` and a single Subscription ([here](./kc-test-config-simple))
+* `KafkaChannel` with 10 `partitions` and a single Subscription ([here](./kc-test-config))
+* `KafkaChannel` with 10 `partitions`, 3 `replica` and a single Subscription ([here](./kc-advanced-config))
 
 ## Broker Configurations
 
