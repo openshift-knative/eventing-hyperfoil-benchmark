@@ -1,61 +1,64 @@
 package io.openshift.serverless.knative.eventing.hyperfoil.benchmark;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.hyperfoil.Hyperfoil;
 import io.hyperfoil.api.statistics.Statistics;
+import io.hyperfoil.api.statistics.StatisticsSnapshot;
 import io.hyperfoil.clustering.BaseAuxiliaryVerticle;
 import io.hyperfoil.clustering.Feeds;
+import io.hyperfoil.clustering.messages.DelayStatsCompletionMessage;
 import io.hyperfoil.clustering.messages.RequestStatsMessage;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
 
 public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
-
-  /**
-   * Using this environment variable you can append to each metric name a value, for example to identify the
-   * instance name. In multiple subscribers case, the suffix might be the trigger name, in order to have a metric for each trigger.
-   */
-  private final static String METRIC_SUFFIX_ENV = "METRIC_SUFFIX";
+  private final static long GARBAGE_COLLECTION_PERIOD = Long.getLong("receiver.gc.period", 60000);
+  private final static long COMPLETION_DELAY_REQUEST_PERIOD = Long.getLong("receiver.gc.period", 5000);
 
   private final static String CE_BENCHMARK_TIMESTAMP_EXTENSION = "ce-benchmarktimestamp";
+  private final static String CE_PHASE_START_TIMESTAMP = "ce-phasestart";
   private final static String CE_PHASE = "ce-phase";
-  private final static String CE_RUNID = "ce-runid";
+  private final static String CE_RUNID = "ce-runId";
   private final static String CE_METRIC = "ce-metric";
 
-  private final String metricsSuffix;
-
-  private String runId;
-  private String phaseId;
-  private String metric;
-  private Statistics stats;
-  private boolean recorded = false;
-
-  public VertxReceiverVerticle() {
-    this.metricsSuffix = System.getenv(METRIC_SUFFIX_ENV) != null ? System.getenv(METRIC_SUFFIX_ENV) : "";
-  }
+  private final List<PhaseStats> phaseStats = new ArrayList<>();
 
   @Override
   public void start(Promise<Void> startPromise) {
     start();
-
     vertx.setPeriodic(1000, v -> sendStats());
     vertx.createHttpServer()
         .requestHandler(this::handleRequest)
         .listen(8080)
         .<Void>mapEmpty()
         .onComplete(startPromise);
-    vertx.setPeriodic(60000, id -> {
+    vertx.setPeriodic(GARBAGE_COLLECTION_PERIOD, id -> {
       // If we do not receive anything for more than 1 minute we'll let statistics be garbage-collected.
       // TODO: compacting stats would be a better approach
-      if (recorded) {
-        recorded = false;
-      } else if (stats != null){
-        stats = null;
+      for (Iterator<PhaseStats> iterator = phaseStats.iterator(); iterator.hasNext(); ) {
+        PhaseStats ps = iterator.next();
+        if (ps.recordedForGc) {
+          ps.recordedForGc = false;
+        } else {
+          iterator.remove();
+        }
+      }
+    });
+    vertx.setPeriodic(COMPLETION_DELAY_REQUEST_PERIOD, id -> {
+      for (PhaseStats ps : phaseStats) {
+        if (ps.recordedForDelay) {
+          ps.recordedForDelay = false;
+          int phaseId = Integer.parseInt(ps.phaseId);
+          vertx.eventBus().send(Feeds.STATS, new DelayStatsCompletionMessage(deploymentID(), ps.runId, phaseId, 2 * COMPLETION_DELAY_REQUEST_PERIOD));
+        }
       }
     });
   }
@@ -66,39 +69,66 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
 
     String runId = request.getHeader(CE_RUNID);
     String phaseId = request.getHeader(CE_PHASE);
-    String metric = request.getHeader(CE_METRIC) + metricsSuffix;
-    if (stats == null || !Objects.equals(runId, this.runId) || !Objects.equals(phaseId, this.phaseId)|| !Objects.equals(metric, this.metric)) {
-      log.info("Starting data for run {}, phase {}, metric {}, first timestamp is {}", runId, phaseId, metric, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S").format(new Date(sendTimestamp)));
-      this.runId = runId;
-      this.phaseId = phaseId;
-      this.metric = metric;
-      stats = new Statistics(now);
-      // Hyperfoil does not publish the last bucket until the stats are marked as complete.
-      // We don't have to care about that since here we're running single-threaded and never know when
-      // we are actually complete.
-      stats.end(now);
+    String metric = request.getHeader(CE_METRIC);
+    PhaseStats found = null;
+    for (PhaseStats ps : phaseStats) {
+      if (Objects.equals(runId, ps.runId) && Objects.equals(phaseId, ps.phaseId) && Objects.equals(metric, ps.metric)) {
+        found = ps;
+        break;
+      }
     }
-
-    stats.incrementRequests(sendTimestamp);
-    stats.recordResponse(sendTimestamp, TimeUnit.MILLISECONDS.toNanos(now - sendTimestamp));
+    if (found == null) {
+      String startTimestampStr = request.getHeader(CE_PHASE_START_TIMESTAMP);
+      long startTimestamp = startTimestampStr == null ? sendTimestamp : Long.parseLong(startTimestampStr);
+      log.info("Starting data for run {}, phase {}, metric {}, first timestamp is {}", runId, phaseId, metric, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S").format(new Date(sendTimestamp)));
+      found = new PhaseStats(runId, phaseId, metric, startTimestamp);
+      phaseStats.add(0, found);
+    }
+    found.recordedForGc = true;
+    found.recordedForDelay = true;
+    found.stats.incrementRequests(sendTimestamp);
+    found.stats.recordResponse(sendTimestamp,  TimeUnit.MILLISECONDS.toNanos(Math.max(0, now - sendTimestamp)));
     request.response().setStatusCode(202).end();
   }
 
   private void sendStats() {
-    if (stats == null || phaseId == null || runId == null || metric == null) {
-      return;
+    for (PhaseStats ps : phaseStats) {
+      int phaseId = Integer.parseInt(ps.phaseId);
+      ps.stats.visitSnapshots(snapshot -> {
+        if (snapshot.requestCount > 0) {
+          // We need to copy the snapshot because sending on event-bus is asynchronous
+          StatisticsSnapshot clone = snapshot.clone();
+          // Normally end time is capped to Statistics.endTime (which we have set prematurely)
+          clone.histogram.setEndTimeStamp(clone.histogram.getStartTimeStamp() + 1000);
+          log.info("Sending stats {}/{}/{} #{} ({} requests) to controller", ps.runId, ps.phaseId, ps.metric, clone.sequenceId, clone.requestCount);
+          vertx.eventBus().send(Feeds.STATS, new RequestStatsMessage(deploymentID(), ps.runId, phaseId, false, 0, ps.metric, clone));
+        }
+      });
     }
-    int phaseId = Integer.parseInt(this.phaseId);
-    stats.visitSnapshots(snapshot -> {
-      if (snapshot.requestCount > 0) {
-        log.info("Sending stats #{} ({} requests) to controller", snapshot.sequenceId, snapshot.requestCount);
-        vertx.eventBus().send(Feeds.STATS, new RequestStatsMessage(deploymentID(), runId, phaseId, false, 0, metric, snapshot));
-      }
-    });
   }
 
   public static void main(String[] args) {
     Hyperfoil.clusteredVertx(false)
           .onSuccess(vertx -> vertx.deployVerticle(VertxReceiverVerticle.class, new DeploymentOptions()));
+  }
+
+  public static class PhaseStats {
+    private final String runId;
+    private final String phaseId;
+    private final String metric;
+    private final Statistics stats;
+    private boolean recordedForGc = false;
+    private boolean recordedForDelay = false;
+
+    public PhaseStats(String runId, String phaseId, String metric, long startTimestamp) {
+      this.runId = runId;
+      this.phaseId = phaseId;
+      this.metric = metric;
+      this.stats = new Statistics(startTimestamp);
+      // Hyperfoil does not publish the last bucket until the stats are marked as complete.
+      // We don't have to care about that since here we're running single-threaded and never know when
+      // we are actually complete.
+      stats.end(startTimestamp);
+    }
   }
 }
