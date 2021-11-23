@@ -8,7 +8,7 @@ data:
     kind: KafkaChannel
     spec:
         numPartitions: 10
-        replicationFactor: 2
+        replicationFactor: 3
         delivery:
           retry: 12
           backoffPolicy: exponential
@@ -22,4 +22,4 @@ spec:
   config:
     apiVersion: v1
     kind: ConfigMap
-    name: my-kafkachannel-broker
+    name: my-kafkachannel-advanced-broker
