@@ -1,8 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-kafka-broker-config
+data:
+  default.topic.partitions: "10"
+  default.topic.replication.factor: "3"
+  bootstrap.servers: my-cluster-kafka-bootstrap.kafka:9092
+
+---
+
 apiVersion: eventing.knative.dev/v1
 kind: Broker
 metadata:
   annotations:
-    # case-sensitive
     eventing.knative.dev/broker.class: Kafka
   name: my-kafka-broker
 spec:
@@ -10,8 +20,7 @@ spec:
   config:
     apiVersion: v1
     kind: ConfigMap
-    name: kafka-broker-config
-    namespace: knative-eventing
+    name: my-kafka-broker-config
   delivery:
     retry: 12
     backoffPolicy: exponential
