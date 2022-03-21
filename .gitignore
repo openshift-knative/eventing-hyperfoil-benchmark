@@ -29,3 +29,5 @@ hs_err_pid*
 
 # Ignore hyperfoil release
 hyperfoil-0.14/
+hyperfoil-0.19/
+current.yaml
