@@ -1,10 +1,10 @@
 apiVersion: hyperfoil.io/v1alpha2
 kind: Hyperfoil
 metadata:
-  name: hyperfoil
-  namespace: openshift-operators
+  name: hyperfoil-cluster
+  namespace: hyperfoil
 spec:
   route:
-    host: hyperfoil.apps.test.perf-lab-myocp4.com
+    host: ${HYPERFOIL_SERVER_URL}
   agentDeployTimeout: 120000
   version: latest
