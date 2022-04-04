@@ -1,0 +1,49 @@
+name: eventing-staircase
+agents:
+  agent-one:
+    node: ${WORKER_ONE}
+    stop: true
+http:
+  host: ${HTTP_HOST}
+  sharedConnections: 20000
+staircase:
+  customSla:
+    cloudevents:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 500s
+      - meanResponseTime: 500s
+        window: 60s
+  incrementUsersPerSec: 1000
+  initialRampUpDuration: 30s
+  initialUsersPerSec: 1000
+  maxIterations: 9
+  maxSessions: 20000
+  rampUpDuration: 30s
+  scenario:
+    - driver:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: ${HTTP_PATH}
+            body: |
+              {
+                  "foo" : "bar"
+              }
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: cloudevents
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 5s
+  steadyStateDuration: 60s

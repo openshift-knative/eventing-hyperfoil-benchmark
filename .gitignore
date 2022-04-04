@@ -31,3 +31,5 @@ hs_err_pid*
 hyperfoil-0.14/
 hyperfoil-0.19/
 current.yaml
+
+.kubeconfig

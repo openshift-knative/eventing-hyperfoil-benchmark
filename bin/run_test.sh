@@ -12,14 +12,14 @@
 #      test case directory to apply for the test.
 #    TEST_CASE_NAMESPACE
 #      namespace of the test case.
+#    SKIP_DELETE_RESOURCES
+#      skip resource clean up.
 
 set -euo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-trap 'delete_manifests $LINENO' ERR SIGINT SIGTERM EXIT
-apply_manifests || exit 1
+echo_input_variables || exit 1
 
 run || exit 1
 
-delete_manifests || exit 1
