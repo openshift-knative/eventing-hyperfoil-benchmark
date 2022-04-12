@@ -101,7 +101,7 @@ public class VertxReceiverVerticle extends BaseAuxiliaryVerticle {
           // Normally end time is capped to Statistics.endTime (which we have set prematurely)
           clone.histogram.setEndTimeStamp(clone.histogram.getStartTimeStamp() + 1000);
           log.info("Sending stats {}/{}/{} #{} ({} requests) to controller", ps.runId, ps.phaseId, ps.metric, clone.sequenceId, clone.requestCount);
-          vertx.eventBus().send(Feeds.STATS, new RequestStatsMessage(deploymentID(), ps.runId, phaseId, false, 0, ps.metric, clone));
+          vertx.eventBus().send(Feeds.STATS, new RequestStatsMessage(deploymentID(), ps.runId, phaseId, 0, ps.metric, clone));
         }
       });
     }
