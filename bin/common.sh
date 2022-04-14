@@ -39,6 +39,7 @@ function apply_manifests() {
   for x in "${manifests[@]}"; do
     echo "Applying ${x}"
     envsubst <"${x}" | oc apply -f - || return $?
+    sleep 30
     wait_for_operators_to_be_running || return $?
   done
 
