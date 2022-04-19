@@ -24,4 +24,4 @@ spec:
   delivery:
     retry: 12
     backoffPolicy: exponential
-    backoffDelay: PT1S
+    backoffDelay: PT0.2S
