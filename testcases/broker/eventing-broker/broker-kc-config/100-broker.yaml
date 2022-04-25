@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  annotations:
+    eventing.knative.dev/broker.class: MTChannelBasedBroker
   name: my-kafkachannel-broker
 data:
   channelTemplateSpec: |-
