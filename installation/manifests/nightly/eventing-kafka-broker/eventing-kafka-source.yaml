@@ -230,12 +230,29 @@ spec:
         app: kafka-source-dispatcher
         kafka.eventing.knative.dev/release: "devel"
     spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-source-dispatcher
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: kafka-source-dispatcher
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: knative-kafka-source-data-plane
       securityContext:
         runAsNonRoot: true
       containers:
         - name: kafka-source-dispatcher
-          image: quay.io/pierdipi/knative-kafka-broker-dispatcher:3d9f649a241274f2eaca5a4f70807555f93afda9d669927ab29393ee8f0da566
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:bb5be866fc67b680cdfa28d18b887c0f25ffe81239faf3ee33984f708411a5d5
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

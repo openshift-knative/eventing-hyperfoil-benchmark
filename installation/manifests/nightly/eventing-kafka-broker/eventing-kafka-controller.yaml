@@ -67,7 +67,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v20220410-66242ea65"
+    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -627,7 +627,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v20220410-66242ea65"
+    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1399,7 +1399,7 @@ spec:
               weight: 100
       containers:
         - name: controller
-          image: quay.io/pierdipi/kafka-controller-409c76cb00d7d7c46941c7e4c366e4a6@sha256:c382f7b31415ab850a8ce58664ebad002e86dc00579be6f8a01e7a91cbd0bb4a
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:97961c073e6abc52da89748675d8ea32e2043dad88c9b7899e21029117214581
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
@@ -1834,7 +1834,7 @@ spec:
       containers:
         - name: kafka-webhook-eventing
           terminationMessagePolicy: FallbackToLogsOnError
-          image: quay.io/pierdipi/webhook-kafka-a0744e57e2361781824e0eef2db067de@sha256:e35e1131cb73ba37014dcc00d0adddafd12d1d17e411f4f4247c8c5a9dc48d4f
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:b08c1561f6cdc6a276052839047e586b074f78225635526cd2546f4cbb7f88f2
           resources:
             requests:
               cpu: 20m

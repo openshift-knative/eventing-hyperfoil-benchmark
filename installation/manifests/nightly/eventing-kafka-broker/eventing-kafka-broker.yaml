@@ -230,12 +230,29 @@ spec:
         app: kafka-broker-dispatcher
         kafka.eventing.knative.dev/release: "devel"
     spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-broker-dispatcher
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: kafka-broker-dispatcher
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: knative-kafka-broker-data-plane
       securityContext:
         runAsNonRoot: true
       containers:
         - name: kafka-broker-dispatcher
-          image: quay.io/pierdipi/knative-kafka-broker-dispatcher:3d9f649a241274f2eaca5a4f70807555f93afda9d669927ab29393ee8f0da566
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:bb5be866fc67b680cdfa28d18b887c0f25ffe81239faf3ee33984f708411a5d5
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -377,10 +394,14 @@ spec:
         app: kafka-broker-receiver
         kafka.eventing.knative.dev/release: "devel"
     spec:
-      serviceAccountName: knative-kafka-broker-data-plane
-      securityContext:
-        runAsNonRoot: true
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-broker-receiver
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -390,9 +411,12 @@ spec:
                     app: kafka-broker-receiver
                 topologyKey: kubernetes.io/hostname
               weight: 100
+      serviceAccountName: knative-kafka-broker-data-plane
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: kafka-broker-receiver
-          image: quay.io/pierdipi/knative-kafka-broker-receiver:0ace54ef3e52a4b2bd8402ff22e96897e65afbd5f7ea2544ea39acfd1c392564
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:89e6a37f1162cfb4d7dc2dba0b9d9df0de8c7037673db0d5f05d7f708708e146
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
