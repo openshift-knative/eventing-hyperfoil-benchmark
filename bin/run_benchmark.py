@@ -81,7 +81,20 @@ def get_run_info(run_id: str) -> any:
     print(run_id, "Getting run info")
 
     try:
-        response = do_request("GET", f"/run/{run_id}")
+        response = do_request("GET", f"/run/{run_id}/stats/total")
+    except Exception as ex:
+        raise Exception(f"Failed to get run info for {run_id}", ex)
+
+    if response.status >= 300:
+        raise Exception(f"failed to get run info, status code {response.status}")
+
+    return response
+
+def get_run_stats(run_id: str) -> any:
+    print(run_id, "Getting run info")
+
+    try:
+        response = do_request("GET", f"/run/{run_id}/stats/total")
     except Exception as ex:
         raise Exception(f"Failed to get run info for {run_id}", ex)
 
@@ -146,7 +159,7 @@ def is_terminated(run_id: str) -> bool:
     info = get_run_info(run_id)
     response_body = info.read()
     response = json.loads(response_body)
-    is_term = response["terminated"] is not None
+    is_term = response["status"] == "TERMINATED"
 
     if is_term:
         save_response(f"/tmp/terminated-{run_id}.json", response_body)
@@ -156,10 +169,19 @@ def is_terminated(run_id: str) -> bool:
 
 def is_failed(run_id: str) -> bool:
     print(run_id, f"Checking benchmark run success/failure")
-    info = get_run_info(run_id)
+    info = get_run_stats(run_id)
     response = json.loads(info.read())
+    stats = response["statistics"]
     pprint.pprint(response)
-    return response["errors"] is not None and len(response["errors"]) > 0
+
+    if stats is None or len(stats) == 0:
+        return True
+
+    for stats in response["statistics"]:
+        if len(stats["failedSLAs"]) > 0:
+            return True
+
+    return False
 
 
 benchmark_name = os.environ["BENCHMARK_NAME"]
