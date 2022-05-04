@@ -1,19 +1,28 @@
 #!/usr/bin/env bash
 
+
+# This script install the system using manifests in
+# `installation/manifests/product` by overriding
+# the variable KNATIVE_MANIFESTS (see `run.sh`
+# for additional providable inputs)
+#
 # Inputs:
 #   Env variables
+#    TEST_CASE
+#      test case directory to apply for the test.
 #    KNATIVE_MANIFESTS
 #      comma separated list of manifests to apply
 #      (and remove at the end).
 #      Default: common.sh#default_manifests
 #    HYPERFOIL_SERVER_URL
 #      URL to the Hyperfoil server.
-#    TEST_CASE
-#      test case directory to apply for the test.
+#      Default: hyperfoil-cluster-hyperfoil.${cluster_domain}
 #    TEST_CASE_NAMESPACE
 #      namespace of the test case.
+#      Default: perf-test
 #    SKIP_DELETE_RESOURCES
 #      skip resource clean up.
+#      Default: false
 
 set -euo pipefail
 

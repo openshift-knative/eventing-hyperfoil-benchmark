@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+
+# This script runs the actual benchmark using
+# the Hyperfoil controller API and waits until
+# the run is terminated.
+# It exits with a non-zero code when there
+# are failed SLAs.
+
+# Inputs:
+#  ENV:
+#    HYPERFOIL_SERVER_URL
+#  It assumes that the benchmark definition is in `/tmp/hf.yaml`
+#
+# Outputs:
+#  /tmp/terminated-<run_id>.json
+#  /tmp/stats-<run_id>.json
+
 import pprint
 from math import fabs
 import os

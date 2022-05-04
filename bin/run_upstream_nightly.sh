@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# This script install the system using manifests in
+# `installation/manifests/nightly` by overriding
+# the variable KNATIVE_MANIFESTS (see `run.sh`
+# for additional providable inputs)
+
 set -euo pipefail
 
 manifests_dir="installation/manifests/nightly"

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "=== Downloading upstream nightly artifacts ==="
+
 rm -rf installation/manifests/nightly/eventing
 rm -rf installation/manifests/nightly/eventing-kafka-broker
 
