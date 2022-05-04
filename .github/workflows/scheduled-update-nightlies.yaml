@@ -1,0 +1,18 @@
+name: Update nightlies
+
+on:
+  schedule:
+    - "0 6 * * *" # Daily at 06:00.
+  workflow_dispatch: # Manual workflow trigger
+
+jobs:
+  update-nightlies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update nightlies
+        run: ./bin/update-nightlies.sh
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          branch: bot/update-nightlies
