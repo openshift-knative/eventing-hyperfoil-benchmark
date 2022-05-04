@@ -16,3 +16,5 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           branch: bot/update-nightlies
+          title: "Update nightly artifacts"
+          commit-message: "Update nightly artifacts"
