@@ -1,0 +1,69 @@
+
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: p10-r3-ord-31-trigger-4
+  annotations:
+    kafka.eventing.knative.dev/delivery.order: ordered
+spec:
+  broker: p10-r3-ord-31
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: p10-r3-ord-31-trigger-4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p10-r3-ord-31-trigger-4
+spec:
+  type: ClusterIP
+  selector:
+    app: p10-r3-ord-31-trigger-4
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p10-r3-ord-31-trigger-4
+  labels:
+    app: p10-r3-ord-31-trigger-4
+spec:
+  selector:
+    matchLabels:
+      app: p10-r3-ord-31-trigger-4
+  template:
+    metadata:
+      labels:
+        app: p10-r3-ord-31-trigger-4
+    spec:
+      containers:
+        - name: receiver
+          image: quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: receiver
+          env:
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
+              value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
+              value: "7800"
+            - name: METRIC_SUFFIX
+              value: "-p10-r3-ord-31-trigger-4"

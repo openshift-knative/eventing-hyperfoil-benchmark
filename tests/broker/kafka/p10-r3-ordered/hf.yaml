@@ -5,28 +5,36 @@ agents:
     stop: true
 http:
   host: ${HTTP_HOST}
-  sharedConnections: 20000
+  sharedConnections: 10000
 staircase:
   customSla:
-    cloudevents:
+    e2elatencykafkabrokerordered1:
       - errorRatio: 0
         limits:
           "0.999": "30s"
-        meanResponseTime: 500ms
-      - meanResponseTime: 500ms
+        meanResponseTime: 20s
+      - meanResponseTime: 20s
         window: 60s
-  incrementUsersPerSec: 1000
-  initialRampUpDuration: 30s
-  initialUsersPerSec: 1000
-  maxIterations: 9
+    e2elatencykafkabrokerordered2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 20s
+      - meanResponseTime: 20s
+        window: 60s
+  initialRampUpDuration: 60s
+  initialUsersPerSec: 500
+  incrementUsersPerSec: 100
+  steadyStateDuration: 120s
+  maxIterations: 20
   maxSessions: 10000
-  rampUpDuration: 30s
+  rampUpDuration: 120s
   scenario:
-    - driver:
+    - kafka-broker-ordered-1:
         - timestamp:
             toVar: eventTimestamp
         - httpRequest:
-            POST: ${HTTP_PATH}
+            POST: /${TEST_CASE_NAMESPACE}/kafka-broker-ordered-1
             body: |
               {
                   "foo" : "bar"
@@ -34,7 +42,7 @@ staircase:
             headers:
               ce-benchmarktimestamp: "${eventTimestamp}"
               ce-id: abc
-              ce-metric: cloudevents
+              ce-metric: e2elatencykafkabrokerordered1
               ce-phase: "${hyperfoil.phase.id}"
               ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
               ce-runid: "${hyperfoil.run.id}"
@@ -45,5 +53,28 @@ staircase:
             sla:
               - meanResponseTime: 1s
               - limits:
-                  "0.999": 5s
-  steadyStateDuration: 60s
+                  "0.999": 1s
+    - kafka-broker-ordered-2:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/kafka-broker-ordered-2
+            body: |
+              {
+                  "foo" : "bar"
+              }
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatencykafkabrokerordered2
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
