@@ -165,10 +165,14 @@ spec:
         app: kafka-sink-receiver
         kafka.eventing.knative.dev/release: "devel"
     spec:
-      serviceAccountName: knative-kafka-sink-data-plane
-      securityContext:
-        runAsNonRoot: true
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-sink-receiver
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -178,9 +182,12 @@ spec:
                     app: kafka-sink-receiver
                 topologyKey: kubernetes.io/hostname
               weight: 100
+      serviceAccountName: knative-kafka-sink-data-plane
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
-          image: quay.io/pierdipi/knative-kafka-broker-receiver:0ace54ef3e52a4b2bd8402ff22e96897e65afbd5f7ea2544ea39acfd1c392564
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:23e4b5f6ce77796b5ae46f7bd904f3b617c508a9c570249faffcb2f56596eaf9
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -242,6 +249,7 @@ spec:
           command:
             - "java"
           args:
+            - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
             - "-jar"
             - "/app/app.jar"
@@ -303,6 +311,10 @@ spec:
   ports:
     - name: http
       port: 80
+      protocol: TCP
+      targetPort: 8080
+    - name: http-container
+      port: 8080
       protocol: TCP
       targetPort: 8080
     - name: http-metrics
