@@ -50,7 +50,7 @@ def load_benchmark(name: str):
         response = do_request("POST", f"/benchmark", body=body, headers={"Content-Type": "text/vnd.yaml"})
         b.close()
     except Exception as ex:
-        raise Exception("Failed to load benchmark", ex)
+        raise Exception("Failed to load benchmark") from ex
     finally:
         b.close()
 
@@ -65,7 +65,7 @@ def start_benchmark(name: str) -> str:
     try:
         response = do_request("GET", f"/benchmark/{name}/start")
     except Exception as ex:
-        raise Exception("Failed to start benchmark", ex)
+        raise Exception("Failed to start benchmark") from ex
 
     if response.status >= 300:
         raise Exception(f"failed to start benchmark {benchmark_name}, status code {response.status}")
@@ -83,7 +83,7 @@ def get_run_info(run_id: str) -> any:
     try:
         response = do_request("GET", f"/run/{run_id}/stats/total")
     except Exception as ex:
-        raise Exception(f"Failed to get run info for {run_id}", ex)
+        raise Exception(f"Failed to get run info for {run_id}") from ex
 
     if response.status >= 300:
         raise Exception(f"failed to get run info, status code {response.status}")
@@ -96,7 +96,7 @@ def get_run_stats(run_id: str) -> any:
     try:
         response = do_request("GET", f"/run/{run_id}/stats/total")
     except Exception as ex:
-        raise Exception(f"Failed to get run info for {run_id}", ex)
+        raise Exception(f"Failed to get run info for {run_id}") from ex
 
     if response.status >= 300:
         raise Exception(f"failed to get run info, status code {response.status}")
@@ -108,7 +108,7 @@ def print_recent_stats(run_id: str):
     try:
         response = do_request("GET", f"/run/{run_id}/stats/recent")
     except Exception as ex:
-        raise Exception(f"Failed to get recent stats for {run_id}", ex)
+        raise Exception(f"Failed to get recent stats for {run_id}") from ex
 
     if response.status >= 300:
         raise Exception(f"failed to get recent stats, status code {response.status}")
@@ -134,7 +134,7 @@ def print_stats(run_id: str):
     try:
         response = do_request("GET", f"/run/{run_id}/stats/all/json")
     except Exception as ex:
-        raise Exception(f"Failed to get all stats for {run_id}", ex)
+        raise Exception(f"Failed to get all stats for {run_id}") from ex
 
     if response.status >= 300:
         raise Exception(f"failed to get all status, status code {response.status}")
