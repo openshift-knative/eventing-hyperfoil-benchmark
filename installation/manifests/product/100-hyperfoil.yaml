@@ -9,6 +9,7 @@ metadata:
   name: hyperfoil-cluster
   namespace: hyperfoil
 spec:
+  image: quay.io/hyperfoil/hyperfoil:0.20-SNAPSHOT
   route:
     host: ${HYPERFOIL_SERVER_URL}
   agentDeployTimeout: 120000

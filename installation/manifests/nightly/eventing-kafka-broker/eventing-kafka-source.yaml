@@ -252,7 +252,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:ac63f664bb172ee09f6c5b0a4affda4063b4d2ba0c3083d6526dffeb59e8b16e
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:a33d0b290a2ee9e2aa5205ac4007324bededf226380524b85b970fa780b6ca95
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

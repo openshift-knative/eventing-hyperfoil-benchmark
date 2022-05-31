@@ -1406,7 +1406,7 @@ spec:
               weight: 100
       containers:
         - name: controller
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:9423f908c904b8bf22ed153be30d556e090069f2266545a466fbb736cf736e9d
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:ae6e4be92aaffde48cc72c6c29b9c565127f1a39c64a4ae21f4256bd639bd10d
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
@@ -1841,7 +1841,7 @@ spec:
       containers:
         - name: kafka-webhook-eventing
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:45d3577f2ab99cd48edec89d00c35957258fd6f094980137c152de5a9650a0fd
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:41eb876d74221e4dbb611986b9e86daa1811e0e6c2b79605e5d5bd327602502f
           resources:
             requests:
               cpu: 20m
