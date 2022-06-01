@@ -118,6 +118,9 @@ function run() {
   # shellcheck disable=SC2016
   envsubst '$HTTP_HOST $HTTP_PATH $WORKER_ONE $TEST_CASE_NAMESPACE' <"${TEST_CASE}/hf.yaml" >/tmp/hf.yaml || return $?
 
+  # Test hyperfoil connection
+  curl -v "${HYPERFOIL_SERVER_URL}/benchmark"
+
   # Run benchmark
   $(dirname "${BASH_SOURCE[0]}")/run_benchmark.py || return $?
 }
