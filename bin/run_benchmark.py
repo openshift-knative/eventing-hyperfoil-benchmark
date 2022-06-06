@@ -171,7 +171,7 @@ def await_termination(run_id: str):
             print_recent_stats(run_id)
         except Exception as ex:
             print("Failed to retrieve recent stats", run_id, ex)
-        time.sleep(20)
+        time.sleep(60*5)
 
     print(f"Benchmark run {run_id} terminated")
 

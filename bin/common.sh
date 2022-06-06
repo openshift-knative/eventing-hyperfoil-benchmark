@@ -49,8 +49,8 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  scale_deployment "kafka-broker-dispatcher" 3
-  scale_deployment "kafka-broker-receiver" 2
+  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
 }
@@ -236,9 +236,9 @@ function echo_input_variables() {
 }
 
 function scale_deployment() {
-  deployment=${1:?Pass deployment as arg[1]}
-  replicas=${1:?Pass replicas as arg[1]}
+  deployment=${1:?Pass deployment as arg[1]} || return $?
+  replicas=${2:?Pass replicas as arg[1]} || return $?
 
-  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}"
-  oc wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
+  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}" || return $?
+  oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }
