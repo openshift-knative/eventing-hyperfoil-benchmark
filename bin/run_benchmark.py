@@ -43,13 +43,13 @@ def do_request(method: str, path: str, body: any = None, headers: Dict[str, str]
     conn = None
     if hf_server_address.startswith("https"):
         conn = client.HTTPSConnection(
-            host=hf_server_address.removeprefix("https://"),
+            host=hf_server_address[len("https://"):],
             context=ctx,
             check_hostname=False,
         )
     else:
         conn = client.HTTPConnection(
-            host=hf_server_address.removeprefix("http://"),
+            host=hf_server_address[len("http://"):],
         )
 
     conn.request(method=method, url=f'{hf_server_address}{path}', body=body, headers=headers)
