@@ -13,7 +13,7 @@ alias kubectl=oc
 
 function create_namespaces {
   echo "Creating namespaces"
-    cat <<EOF | oc apply -f -
+  cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -49,6 +49,9 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
+  scale_deployment "kafka-broker-dispatcher" 3
+  scale_deployment "kafka-broker-receiver" 2
+
   wait_for_workloads_to_be_running || exit 1
 }
 
@@ -75,7 +78,7 @@ function delete_manifests() {
 function apply_test_resources() {
   wait_for_workloads_to_be_running || return $?
 
-    cat <<EOF | oc apply -f -
+  cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -232,4 +235,12 @@ function echo_input_variables() {
   echo "TEST_CASE: ${TEST_CASE}"
   echo "TEST_CASE_NAMESPACE: ${TEST_CASE_NAMESPACE}"
   echo "WORKER_ONE: ${WORKER_ONE}"
+}
+
+function scale_deployment() {
+  deployment=${1:?Pass deployment as arg[1]}
+  replicas=${1:?Pass replicas as arg[1]}
+
+  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}"
+  oc wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
 }
