@@ -11,8 +11,6 @@ export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
 
 alias kubectl=oc
 
-python3 --version
-
 function create_namespaces {
   echo "Creating namespaces"
   oc create ns kafka --dry-run=client -oyaml | oc apply -f - || return $?
