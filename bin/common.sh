@@ -85,8 +85,6 @@ metadata:
   name: ${TEST_CASE_NAMESPACE}
 EOF
 
-  scale_machineset "20" || return $?
-
   oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources"
 }
 
