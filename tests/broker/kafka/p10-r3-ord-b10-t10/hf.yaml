@@ -1,0 +1,1167 @@
+
+name: eventing-staircase
+agents:
+  agent-one:
+    node: ${WORKER_ONE}
+    stop: true
+  agent-two:
+    node: ${WORKER_ONE}
+    stop: true
+  agent-three:
+    node: ${WORKER_ONE}
+    stop: true
+http:
+  host: ${HTTP_HOST}
+  sharedConnections: 10000
+staircase:
+  customSla:
+    
+    e2elatency-p10-r3-ord-0-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-0-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-1-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-2-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-3-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-4-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-5-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-6-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-7-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-8-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-0:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-1:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-2:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-3:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-4:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-5:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-6:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-7:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-8:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+    e2elatency-p10-r3-ord-9-trigger-9:
+      - errorRatio: 0
+        limits:
+          "0.999": "30s"
+        meanResponseTime: 10s
+      - meanResponseTime: 10s
+        window: 60s
+
+
+  initialRampUpDuration: 60s
+  initialUsersPerSec: 500
+  incrementUsersPerSec: 100
+  steadyStateDuration: 120s
+  maxIterations: 20
+  maxSessions: 10000
+  rampUpDuration: 120s
+  scenario:
+  
+    - p10-r3-ord-0:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-0
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-1:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-1
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-2:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-2
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-3:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-3
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-4:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-4
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-5:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-5
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-6:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-6
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-7:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-7
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-8:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-8
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+
+    - p10-r3-ord-9:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-ord-9
+            body: |
+              {"foo" : "bar"}
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 1s
+              - limits:
+                  "0.999": 1s
+
+

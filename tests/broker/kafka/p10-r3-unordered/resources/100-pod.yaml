@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: receiver
-          image: quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver
+          image: quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

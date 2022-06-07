@@ -16,14 +16,13 @@
 #  /tmp/stats-<run_id>.json
 
 import pprint
-from math import fabs
 import os
 import json
 import ssl
 import time
-from urllib.request import urlopen
-from urllib.parse import urlparse
+import sys
 from http import client
+from typing import Dict
 
 hf_server_protocol = os.getenv("HYPERFOIL_SERVER_PROTOCOL")
 if hf_server_protocol is None:
@@ -36,7 +35,7 @@ hf_server_address = f'{hf_server_protocol}{os.environ["HYPERFOIL_SERVER_URL"]}'
 hf_path = f'/tmp/hf.yaml'
 
 
-def do_request(method: str, path: str, body: any = None, headers: dict[str, str] = {}) -> any:
+def do_request(method: str, path: str, body: any = None, headers: Dict[str, str] = {}) -> any:
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -44,13 +43,13 @@ def do_request(method: str, path: str, body: any = None, headers: dict[str, str]
     conn = None
     if hf_server_address.startswith("https"):
         conn = client.HTTPSConnection(
-            host=hf_server_address.removeprefix("https://"),
+            host=hf_server_address[len("https://"):],
             context=ctx,
             check_hostname=False,
         )
     else:
         conn = client.HTTPConnection(
-            host=hf_server_address.removeprefix("http://"),
+            host=hf_server_address[len("http://"):],
         )
 
     conn.request(method=method, url=f'{hf_server_address}{path}', body=body, headers=headers)
@@ -63,7 +62,10 @@ def load_benchmark(name: str):
     b = open(hf_path, "rb")
     try:
         body = b.read()
-        response = do_request("POST", f"/benchmark", body=body, headers={"Content-Type": "text/vnd.yaml"})
+        response = do_request(method="POST",
+                              path=f"/benchmark",
+                              body=body,
+                              headers={"Content-Type": "text/vnd.yaml"})
         b.close()
     except Exception as ex:
         raise Exception("Failed to load benchmark") from ex
@@ -79,12 +81,15 @@ def load_benchmark(name: str):
 def start_benchmark(name: str) -> str:
     print(name, "Starting benchmark")
     try:
-        response = do_request("GET", f"/benchmark/{name}/start")
+        response = do_request(method="GET",
+                              path=f"/benchmark/{name}/start")
     except Exception as ex:
         raise Exception("Failed to start benchmark") from ex
 
     if response.status >= 300:
-        raise Exception(f"failed to start benchmark {benchmark_name}, status code {response.status}")
+        raise Exception(
+            f"failed to start benchmark {benchmark_name}, status code {response.status}"
+        )
 
     body = response.read()
     run_id = json.loads(body)['id']
@@ -105,6 +110,7 @@ def get_run_info(run_id: str) -> any:
         raise Exception(f"failed to get run info, status code {response.status}")
 
     return response
+
 
 def get_run_stats(run_id: str) -> any:
     print(run_id, "Getting run info")
@@ -165,7 +171,7 @@ def await_termination(run_id: str):
             print_recent_stats(run_id)
         except Exception as ex:
             print("Failed to retrieve recent stats", run_id, ex)
-        time.sleep(20)
+        time.sleep(60*5)
 
     print(f"Benchmark run {run_id} terminated")
 
@@ -184,7 +190,7 @@ def is_terminated(run_id: str) -> bool:
 
 
 def is_failed(run_id: str) -> bool:
-    print(run_id, f"Checking benchmark run success/failure")
+    print(run_id, "Checking benchmark run success/failure")
     info = get_run_stats(run_id)
     response = json.loads(info.read())
     stats = response["statistics"]
@@ -209,4 +215,4 @@ print_stats(run_id)
 
 if is_failed(run_id):
     print(f"Run {run_id} failed")
-    exit(1)
+    sys.exit(1)

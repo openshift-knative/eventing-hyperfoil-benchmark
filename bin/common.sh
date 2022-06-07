@@ -13,7 +13,12 @@ alias kubectl=oc
 
 function create_namespaces {
   echo "Creating namespaces"
-  oc create ns kafka --dry-run=client -oyaml | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+EOF
 }
 
 function delete_test_namespace {
@@ -31,6 +36,8 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
+  scale_machineset "15" || return $?
+
   create_namespaces || return $?
 
   # Extract manifests from the comma-separated list of manifests
@@ -41,6 +48,9 @@ function apply_manifests() {
     envsubst <"${x}" | oc apply -f - || return $?
     wait_for_operators_to_be_running || return $?
   done
+
+  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
 }
@@ -66,9 +76,16 @@ function delete_manifests() {
 }
 
 function apply_test_resources() {
-  oc create ns "${TEST_CASE_NAMESPACE}" --dry-run=client -oyaml | oc apply -f - || return $?
-  # Before applying resources replace environment variables.
-  oc apply -n "${TEST_CASE_NAMESPACE}" --dry-run=client -f "${TEST_CASE}/resources" -oyaml | envsubst | oc apply -f - || return $?
+  wait_for_workloads_to_be_running || return $?
+
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${TEST_CASE_NAMESPACE}
+EOF
+
+  oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources"
 }
 
 function run() {
@@ -89,6 +106,7 @@ function run() {
   wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
+  wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.
   source "${TEST_CASE}"/additional.sh
@@ -99,10 +117,31 @@ function run() {
   HTTP_PATH=$(HTTP_TARGET=$HTTP_TARGET python3 -c "from urllib.parse import urlparse; import os; print(urlparse(os.environ['HTTP_TARGET']).path)")
   export HTTP_PATH HTTP_HOST
   # shellcheck disable=SC2016
-  envsubst '$HTTP_HOST $HTTP_PATH $WORKER_ONE' <"${TEST_CASE}/hf.yaml" >/tmp/hf.yaml || return $?
+  envsubst '$HTTP_HOST $HTTP_PATH $WORKER_ONE $TEST_CASE_NAMESPACE' <"${TEST_CASE}/hf.yaml" >/tmp/hf.yaml || return $?
+
+  # Test hyperfoil connection
+  curl -v "${HYPERFOIL_SERVER_URL}/benchmark"
 
   # Run benchmark
   $(dirname "${BASH_SOURCE[0]}")/run_benchmark.py || return $?
+}
+
+function scale_machineset() {
+  echo "Reconcile workers to at least ${1} nodes"
+  additional_replicas=$(oc get machineset -n openshift-machine-api | awk '{print $2}' | tail -n +2 | awk -v workers="$1" '{sum+=$1} END {print workers-sum}')
+  echo "Additional replicas ${additional_replicas}"
+  if [[ ${additional_replicas} -gt 0 ]]; then
+    machineset="$(oc get machineset -n openshift-machine-api | awk '{print $1}' | tail -n +2 | head -1)"
+    replicas=$(oc get machineset -n openshift-machine-api "${machineset}" -o=jsonpath='{.spec.replicas}')
+    replicas=$(expr ${replicas} + ${additional_replicas})
+    oc scale machineset "${machineset}" -n openshift-machine-api --replicas="${replicas}"
+    wait_for_machine_set_to_be_ready "${machineset}"
+  fi
+}
+
+function wait_for_machine_set_to_be_ready() {
+  replicas=$(oc get machineset -n openshift-machine-api "${1}" -o=jsonpath='{.spec.replicas}')
+  oc wait machineset "${machineset}" -n openshift-machine-api --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
 }
 
 function wait_for_resources_to_be_ready() {
@@ -114,6 +153,8 @@ function wait_for_resources_to_be_ready() {
 }
 
 function wait_for_operators_to_be_running() {
+  sleep 10 # Workaround for https://github.com/kubernetes/kubernetes/issues/109489
+
   oc get subscription.operators.coreos.com -n openshift-operators |
     awk '{print $1}' | # Extract resource name
     tail -n +2 |       # skip header
@@ -127,7 +168,6 @@ function wait_for_operators_to_be_running() {
 
 function wait_for_workloads_to_be_running() {
   echo "Waiting for pods to be running"
-  sleep 120 # This gives time to dynamic pods to be created.
   wait_until_pods_running "kafka" || return $?
   wait_until_pods_running "knative-eventing" || return $?
   wait_until_pods_running "hyperfoil" || return $?
@@ -193,4 +233,12 @@ function echo_input_variables() {
   echo "TEST_CASE: ${TEST_CASE}"
   echo "TEST_CASE_NAMESPACE: ${TEST_CASE_NAMESPACE}"
   echo "WORKER_ONE: ${WORKER_ONE}"
+}
+
+function scale_deployment() {
+  deployment=${1:?Pass deployment as arg[1]} || return $?
+  replicas=${2:?Pass replicas as arg[1]} || return $?
+
+  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}" || return $?
+  oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }

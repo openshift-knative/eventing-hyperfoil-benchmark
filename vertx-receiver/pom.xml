@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <hyperfoil.version>0.19</hyperfoil.version>
+        <hyperfoil.version>0.20</hyperfoil.version>
     </properties>
 
     <dependencies>
@@ -21,6 +21,13 @@
             <version>${hyperfoil.version}</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -42,7 +49,7 @@
                         <image>openjdk:17</image>
                     </from>
                     <to>
-                        <image>quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver</image>
+                        <image>quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver</image>
                     </to>
                     <container>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: receiver
+  name: kafka-broker-ordered-1-trigger-1
 spec:
   type: ClusterIP
   selector:
-    app: receiver
+    app: kafka-broker-ordered-1-trigger-1
   ports:
     - port: 80
       protocol: TCP
@@ -17,22 +17,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: receiver
+  name: kafka-broker-ordered-1-trigger-1
   labels:
-    app: receiver
+    app: kafka-broker-ordered-1-trigger-1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: receiver
+      app: kafka-broker-ordered-1-trigger-1
   template:
     metadata:
       labels:
-        app: receiver
+        app: kafka-broker-ordered-1-trigger-1
     spec:
       containers:
         - name: receiver
-          image: quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver
+          image: quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -43,3 +43,149 @@ spec:
               value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
             - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
               value: "7800"
+            - name: METRICS_SUFFIX
+              value: "-kafka-broker-ordered-1-trigger-1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker-ordered-1-trigger-2
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-broker-ordered-1-trigger-2
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker-ordered-1-trigger-2
+  labels:
+    app: kafka-broker-ordered-1-trigger-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker-ordered-1-trigger-2
+  template:
+    metadata:
+      labels:
+        app: kafka-broker-ordered-1-trigger-2
+    spec:
+      containers:
+        - name: receiver
+          image: quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: receiver
+          env:
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
+              value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
+              value: "7800"
+            - name: METRIC_SUFFIX
+              value: "-kafka-broker-ordered-1-trigger-2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker-ordered-2-trigger-1
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-broker-ordered-2-trigger-1
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker-ordered-2-trigger-1
+  labels:
+    app: kafka-broker-ordered-2-trigger-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker-ordered-2-trigger-1
+  template:
+    metadata:
+      labels:
+        app: kafka-broker-ordered-2-trigger-1
+    spec:
+      containers:
+        - name: receiver
+          image: quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: receiver
+          env:
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
+              value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
+              value: "7800"
+            - name: METRICS_SUFFIX
+              value: "-kafka-broker-ordered-2-trigger-1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker-ordered-2-trigger-2
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-broker-ordered-2-trigger-2
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker-ordered-2-trigger-2
+  labels:
+    app: kafka-broker-ordered-2-trigger-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker-ordered-2-trigger-2
+  template:
+    metadata:
+      labels:
+        app: kafka-broker-ordered-2-trigger-2
+    spec:
+      containers:
+        - name: receiver
+          image: quay.io/pierdipi/eventing-hyperfoil-benchmark-vertx-receiver
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: receiver
+          env:
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
+              value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
+            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
+              value: "7800"
+            - name: METRICS_SUFFIX
+              value: "-kafka-broker-ordered-2-trigger-2"
