@@ -251,7 +251,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-channel-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:a33d0b290a2ee9e2aa5205ac4007324bededf226380524b85b970fa780b6ca95
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:7acc77a0fb845ad0e2dadaf6472140605720259d692753bee9791ed09769c8c2
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -416,7 +416,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-channel-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:68fd9000baa49e6dbe87dabfd257f63b26e002be1fb0ae2183fda3ff727816fb
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:02849212e991eb254fc8c31729468a4366f841964886f8bb57398f11f553e55d
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

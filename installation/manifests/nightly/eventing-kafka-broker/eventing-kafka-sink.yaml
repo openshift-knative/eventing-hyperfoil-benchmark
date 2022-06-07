@@ -187,7 +187,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:68fd9000baa49e6dbe87dabfd257f63b26e002be1fb0ae2183fda3ff727816fb
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:02849212e991eb254fc8c31729468a4366f841964886f8bb57398f11f553e55d
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

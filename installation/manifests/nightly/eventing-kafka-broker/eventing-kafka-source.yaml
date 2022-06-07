@@ -212,7 +212,7 @@ roleRef:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: kafka-source-dispatcher
   namespace: knative-eventing
@@ -220,6 +220,8 @@ metadata:
     app: kafka-source-dispatcher
     kafka.eventing.knative.dev/release: "devel"
 spec:
+  serviceName: kafka-source-dispatcher
+  podManagementPolicy: "Parallel"
   selector:
     matchLabels:
       app: kafka-source-dispatcher
@@ -228,6 +230,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
+        app.kubernetes.io/component: kafka-dispatcher
         kafka.eventing.knative.dev/release: "devel"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
@@ -252,14 +255,14 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:a33d0b290a2ee9e2aa5205ac4007324bededf226380524b85b970fa780b6ca95
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:7acc77a0fb845ad0e2dadaf6472140605720259d692753bee9791ed09769c8c2
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
               name: config-kafka-source-data-plane
               readOnly: true
-            - mountPath: /etc/sources
-              name: kafka-source-sources
+            - mountPath: /etc/contract-resources
+              name: contract-resources
               readOnly: true
             - mountPath: /tmp
               name: cache
@@ -287,7 +290,7 @@ spec:
             - name: WEBCLIENT_CONFIG_FILE_PATH
               value: /etc/config/config-kafka-source-webclient.properties
             - name: DATA_PLANE_CONFIG_FILE_PATH
-              value: /etc/sources/data
+              value: /etc/contract-resources/data
             - name: EGRESSES_INITIAL_CAPACITY
               value: "20"
             - name: INSTANCE_ID
@@ -317,7 +320,14 @@ spec:
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
             - "-jar"
             - "/app/app.jar"
-          # TODO set resources (limits and requests)
+          resources:
+            requests:
+              cpu: 1000m
+              # 600Mi for virtual replicas + 100Mi overhead
+              memory: 700Mi
+            limits:
+              cpu: 2000m
+              memory: 1000Mi
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -344,9 +354,6 @@ spec:
         - name: config-kafka-source-data-plane
           configMap:
             name: config-kafka-source-data-plane
-        - name: kafka-source-sources
-          configMap:
-            name: kafka-source-sources
         - name: cache
           emptyDir: {}
         - name: kafka-config-logging

@@ -67,7 +67,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
+    kafka.eventing.knative.dev/release: "v20220530-7b2963149"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -627,7 +627,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
+    kafka.eventing.knative.dev/release: "v20220530-7b2963149"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -825,6 +825,36 @@ data:
       {"Name": "RemoveWithHighestOrdinalPriority",
       "Weight": 2}
     ]
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-kafka-features
+  namespace: knative-eventing
+  annotations:
+    knative.dev/example-checksum: "e914c9f1"
+data:
+  _example: |-
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    #
+    # Controls whether the dispatcher should use the rate limiter based on the number of virtual replicas.
+    # 1. Enabled: The rate limiter is applied.
+    # 2. Disabled: The rate limiter is not applied.
+    dispatcher.rate-limiter: "disabled"
+  dispatcher.rate-limiter: "disabled"
 
 ---
 apiVersion: v1
@@ -1406,7 +1436,7 @@ spec:
               weight: 100
       containers:
         - name: controller
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:ae6e4be92aaffde48cc72c6c29b9c565127f1a39c64a4ae21f4256bd639bd10d
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:ab2e0f2347461503167c0dd4d20b4d471eb22a6d386d8f136335a66373290fb7
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
@@ -1432,6 +1462,8 @@ spec:
             - name: SINK_DATA_PLANE_CONFIG_FORMAT
               value: json
             - name: SOURCE_DATA_PLANE_CONFIG_FORMAT
+              value: json
+            - name: CONSUMER_DATA_PLANE_CONFIG_FORMAT
               value: json
             - name: BROKER_INGRESS_NAME
               value: kafka-broker-ingress
@@ -1841,7 +1873,7 @@ spec:
       containers:
         - name: kafka-webhook-eventing
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:41eb876d74221e4dbb611986b9e86daa1811e0e6c2b79605e5d5bd327602502f
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:f2a599a008b7b64557a4a18e319f4014e9d0f83ff8d01076a3a5e65eed4f4905
           resources:
             requests:
               cpu: 20m
