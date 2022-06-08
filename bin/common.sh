@@ -36,7 +36,7 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
-  scale_machineset "15" || return $?
+  scale_machineset "20" || return $?
 
   create_namespaces || return $?
 
