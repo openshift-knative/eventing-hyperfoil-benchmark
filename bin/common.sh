@@ -49,7 +49,7 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  scale_deployment "kafka-broker-dispatcher" 10 || return $?
+  scale_deployment "kafka-broker-dispatcher" 3 || return $?
   scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1

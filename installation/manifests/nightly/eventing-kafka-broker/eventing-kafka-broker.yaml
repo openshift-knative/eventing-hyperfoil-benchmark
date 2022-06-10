@@ -318,6 +318,10 @@ spec:
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
+          resources:
+            requests:
+              memory: 1G
+              cpu: 700m
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -484,6 +488,10 @@ spec:
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
+          resources:
+            requests:
+              memory: 1G
+              cpu: 500m
           livenessProbe:
             failureThreshold: 3
             httpGet:
