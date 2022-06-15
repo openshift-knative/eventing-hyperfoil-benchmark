@@ -916,9 +916,9 @@ staircase:
         window: 60s
 
 
-  initialRampUpDuration: 60s
-  initialUsersPerSec: 500
-  incrementUsersPerSec: 100
+  initialRampUpDuration: 120s
+  initialUsersPerSec: 200
+  incrementUsersPerSec: 20
   steadyStateDuration: 120s
   maxIterations: 20
   maxSessions: 10000
