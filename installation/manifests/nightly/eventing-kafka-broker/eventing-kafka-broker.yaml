@@ -310,10 +310,11 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
           command:
             - "java"
           args:
-            - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
             - "-jar"
             - "/app/app.jar"
@@ -321,7 +322,10 @@ spec:
           resources:
             requests:
               memory: 1G
-              cpu: 700m
+              cpu: 500m
+            limits:
+              memory: 1G
+              cpu: "1"
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -354,7 +358,7 @@ spec:
           configMap:
             name: kafka-broker-brokers-triggers
         - name: cache
-          emptyDir: {}
+          emptyDir: { }
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -480,10 +484,11 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
           command:
             - "java"
           args:
-            - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
             - "-jar"
             - "/app/app.jar"
@@ -492,6 +497,9 @@ spec:
             requests:
               memory: 1G
               cpu: 500m
+            limits:
+              memory: 1G
+              cpu: "1"
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -526,7 +534,7 @@ spec:
           configMap:
             name: config-kafka-broker-data-plane
         - name: cache
-          emptyDir: {}
+          emptyDir: { }
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging

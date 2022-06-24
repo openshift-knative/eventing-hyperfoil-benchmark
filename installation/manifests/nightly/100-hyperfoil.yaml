@@ -9,6 +9,9 @@ metadata:
   name: hyperfoil-cluster
   namespace: hyperfoil
 spec:
+  image: quay.io/hyperfoil/hyperfoil:0.20-SNAPSHOT
+  additionalArgs:
+  - "-Djgroups.thread_pool.max_threads=500"
   route:
     host: ${HYPERFOIL_SERVER_URL}
   agentDeployTimeout: 120000
