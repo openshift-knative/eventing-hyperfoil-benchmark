@@ -83,6 +83,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: ${TEST_CASE_NAMESPACE}
+  labels:
+    openshift.io/cluster-monitoring: true
 EOF
 
   oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources"
