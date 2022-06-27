@@ -144,6 +144,9 @@ spec:
       containers:
         - name: receiver
           image: ghcr.io/pierdipi/sacura/sacura-7befbbbc92911c6727467cfbf23af88f
+          args:
+            - "--config"
+            - "/etc/sacura/sacura.yaml"
           imagePullPolicy: Always
           resources:
             limits:
