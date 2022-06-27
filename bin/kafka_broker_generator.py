@@ -88,7 +88,42 @@ spec:
       protocol: TCP
       targetPort: receiver
       name: http
+    - port: 9090
+      protocol: TCP
+      targetPort: http-metrics
+      name: http-metrics
 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-sacura
+data:
+  sacura.yaml: |
+    sender:
+      disabled: true
+    receiver:
+      port: 8080
+      timeout: 5m
+      maxDuplicatesPercentage: 0.5
+    duration: 10m
+    timeout: 1m
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {trigger_name}
+  labels:
+    app: {trigger_name}
+spec:
+  endpoints:
+    - path: /metrics
+      port: http-metrics
+  selector:
+    matchLabels:
+      app: {trigger_name}
 ---
 
 apiVersion: apps/v1
@@ -108,7 +143,7 @@ spec:
     spec:
       containers:
         - name: receiver
-          image: quay.io/openshift-knative/eventing-hyperfoil-benchmark-vertx-receiver
+          image: ghcr.io/pierdipi/sacura/sacura-7befbbbc92911c6727467cfbf23af88f
           imagePullPolicy: Always
           resources:
             limits:
@@ -117,17 +152,26 @@ spec:
             requests:
               memory: "300Mi"
               cpu: "500m"
+          volumeMounts:
+          - mountPath: /etc/sacura
+            name: config
           ports:
             - containerPort: 8080
               protocol: TCP
               name: receiver
+            - containerPort: 9090
+              protocol: TCP
+              name: http-metrics
           env:
-            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_IP
-              value: hyperfoil-cluster-cluster.hyperfoil.svc.cluster.local
-            - name: IO_HYPERFOIL_CONTROLLER_CLUSTER_PORT
-              value: "7800"
-            - name: METRIC_SUFFIX
-              value: "-{trigger_name}"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "trigger={trigger_name}"
+            - name: OTEL_SERVICE_NAME
+              value: "sacura"
+      volumes:
+      - name: config
+        configMap:
+          name: config-sacura
+ 
 """
         filename = f"{args.resources_output_dir}/{trigger_name}.yaml"
         print(f"Saving file {filename}")
@@ -192,8 +236,6 @@ http:
   host: ${{HTTP_HOST}}
   sharedConnections: 10000
 staircase:
-  customSla:
-    {customSLAs}
   initialRampUpDuration: 60s
   initialUsersPerSec: 500
   incrementUsersPerSec: 100
