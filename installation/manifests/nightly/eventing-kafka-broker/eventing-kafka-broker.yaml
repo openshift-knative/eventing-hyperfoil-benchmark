@@ -321,11 +321,10 @@ spec:
           # TODO set resources (limits and requests)
           resources:
             requests:
-              memory: 1G
+              memory: 2G
               cpu: 500m
             limits:
-              memory: 1G
-              cpu: "1"
+              memory: 2G
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -499,7 +498,6 @@ spec:
               cpu: 500m
             limits:
               memory: 1G
-              cpu: "1"
           livenessProbe:
             failureThreshold: 3
             httpGet:

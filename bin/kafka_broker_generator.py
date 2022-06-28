@@ -105,7 +105,7 @@ data:
     receiver:
       port: 8080
       timeout: 5m
-      maxDuplicatesPercentage: 0.5
+      maxDuplicatesPercentage: 1
     duration: 10m
     timeout: 1m
 
@@ -196,6 +196,9 @@ for trigger_name in triggers:
 
 """
 
+with open("payloads/payload.68KB.txt") as f:
+    payload = f.read().replace("\n", "")
+
 for broker_name in brokers:
     scenarios += f"""
     - {broker_name}:
@@ -203,8 +206,7 @@ for broker_name in brokers:
             toVar: eventTimestamp
         - httpRequest:
             POST: /${{TEST_CASE_NAMESPACE}}/{broker_name}
-            body: |
-              {{"foo" : "bar"}}
+            body: "{payload}"
             headers:
               ce-benchmarktimestamp: "${{eventTimestamp}}"
               ce-id: abc
@@ -217,9 +219,9 @@ for broker_name in brokers:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 1s
+              - meanResponseTime: 3s
               - limits:
-                  "0.999": 1s
+                  "0.999": 5s
 
 """
 
@@ -243,8 +245,8 @@ staircase:
   initialUsersPerSec: 500
   incrementUsersPerSec: 100
   steadyStateDuration: 120s
-  maxIterations: 20
-  maxSessions: 10000
+  maxIterations: 10
+  maxSessions: 20000
   rampUpDuration: 120s
   scenario:
   {scenarios}

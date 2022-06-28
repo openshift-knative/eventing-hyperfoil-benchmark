@@ -29,13 +29,14 @@ spec:
       transaction.state.log.min.isr: 2
       log.message.format.version: "3.0"
       inter.broker.protocol.version: "3.0"
+      auto.create.topics.enable: false
     storage:
       type: persistent-claim
-      size: 100Gi
+      size: 500Gi
       deleteClaim: true
     resources:
       requests:
-        memory: 2Gi
+        memory: 4Gi
         cpu: "1"
     template:
       pod:

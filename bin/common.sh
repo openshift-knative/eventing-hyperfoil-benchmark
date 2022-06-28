@@ -6,6 +6,7 @@ default_hyperfoil_server_url="hyperfoil-cluster-hyperfoil.${cluster_domain}"
 export HYPERFOIL_SERVER_URL=${HYPERFOIL_SERVER_URL:-${default_hyperfoil_server_url}}
 export KNATIVE_MANIFESTS=${KNATIVE_MANIFESTS-$default_manifests}
 export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
+export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
 
@@ -49,7 +50,7 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-dispatcher" 5 || return $?
   scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
@@ -87,7 +88,11 @@ metadata:
     openshift.io/cluster-monitoring: "true"
 EOF
 
-  oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources"
+  if ${SKIP_CREATE_TEST_RESOURCES}; then
+    return 0
+  fi
+
+  oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources" || return $?
 }
 
 function run() {
@@ -102,12 +107,12 @@ function run() {
   apply_test_resources || apply_test_resources || return $?
 
   # Wait for all possible resources to be ready
-  wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
-  wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
-  wait_for_resources_to_be_ready "channels.messaging.knative.dev" || return $?
-  wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
-  wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
-  wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "channels.messaging.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
+  # wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
   wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.
