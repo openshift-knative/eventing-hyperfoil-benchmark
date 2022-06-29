@@ -176,7 +176,7 @@ function wait_for_operators_to_be_running() {
 function wait_for_workloads_to_be_running() {
   echo "Waiting for pods to be running"
   wait_until_pods_running "kafka" || return $?
-  wait_until_pods_running "knative-eventing" || return $?
+#  wait_until_pods_running "knative-eventing" || return $?
   wait_until_pods_running "hyperfoil" || return $?
 }
 

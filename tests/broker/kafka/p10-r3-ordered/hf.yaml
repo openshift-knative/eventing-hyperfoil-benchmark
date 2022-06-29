@@ -12,13 +12,13 @@ agents:
     stop: true
 http:
   host: ${HTTP_HOST}
-  sharedConnections: 10000
+  sharedConnections: 21000
 staircase:
   initialRampUpDuration: 60s
-  initialUsersPerSec: 500
-  incrementUsersPerSec: 100
-  steadyStateDuration: 120s
-  maxIterations: 10
+  initialUsersPerSec: 10
+  incrementUsersPerSec: 10
+  steadyStateDuration: 300s
+  maxIterations: 8
   maxSessions: 20000
   rampUpDuration: 120s
   scenario:
@@ -41,9 +41,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-1:
@@ -64,9 +64,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-2:
@@ -87,9 +87,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-3:
@@ -110,9 +110,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-4:
@@ -133,9 +133,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-5:
@@ -156,9 +156,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-6:
@@ -179,9 +179,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-7:
@@ -202,9 +202,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-8:
@@ -225,9 +225,9 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
     - broker-ord-9:
@@ -248,8 +248,8 @@ staircase:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 
