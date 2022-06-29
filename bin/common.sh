@@ -107,12 +107,12 @@ function run() {
   apply_test_resources || apply_test_resources || return $?
 
   # Wait for all possible resources to be ready
-  # wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
-  # wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
-  # wait_for_resources_to_be_ready "channels.messaging.knative.dev" || return $?
-  # wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
-  # wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
-  # wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
+  wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
+  wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
+  wait_for_resources_to_be_ready "channels.messaging.knative.dev" || return $?
+  wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
+  wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
+  wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
   wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.
