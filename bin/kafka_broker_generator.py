@@ -219,9 +219,9 @@ for broker_name in brokers:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 3s
+              - meanResponseTime: 70s
               - limits:
-                  "0.999": 5s
+                  "0.999": 90s
 
 """
 
@@ -239,13 +239,13 @@ agents:
     stop: true
 http:
   host: ${{HTTP_HOST}}
-  sharedConnections: 10000
+  sharedConnections: 21000
 staircase:
   initialRampUpDuration: 60s
-  initialUsersPerSec: 500
-  incrementUsersPerSec: 100
-  steadyStateDuration: 120s
-  maxIterations: 10
+  initialUsersPerSec: 10
+  incrementUsersPerSec: 10
+  steadyStateDuration: 300s
+  maxIterations: 8
   maxSessions: 20000
   rampUpDuration: 120s
   scenario:
