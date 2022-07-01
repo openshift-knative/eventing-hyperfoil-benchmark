@@ -17,8 +17,49 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+  annotations:
+    knative.dev/example-checksum: "a8ce4acb"
 data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # All configurations in this ConfigMap are globally applied to each
+    # resource and there is no way to change them on a per-resource basis,
+    # unless otherwise specified.
+
+    # Producer configuration are documented in https://kafka.apache.org/documentation/#producerconfigs
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.serializer` and `value.serializer`.
+    config-kafka-sink-producer.properties: |
+      key.serializer=org.apache.kafka.common.serialization.StringSerializer
+      value.serializer=io.cloudevents.kafka.CloudEventSerializer
+      acks=all
+
+    # Available Vertx HTTPServerOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/core/http/HttpServerOptions.html.
+    #
+    # Each receiver pod creates a single HTTP server.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-sink-httpserver.properties: |
+      idleTimeout=0
   config-kafka-sink-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
     value.serializer=io.cloudevents.kafka.CloudEventSerializer
@@ -35,7 +76,7 @@ data:
     max.request.size=1048576
     partitioner.class=org.apache.kafka.clients.producer.internals.DefaultPartitioner
     receive.buffer.bytes=-1
-    request.timeout.ms=30000
+    request.timeout.ms=2000
     enable.idempotence=false
     max.in.flight.requests.per.connection=5
     metadata.max.age.ms=300000
@@ -70,7 +111,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 rules:
   - apiGroups:
       - "*"
@@ -101,7 +142,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -122,7 +163,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -153,7 +194,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 spec:
   selector:
     matchLabels:
@@ -163,7 +204,7 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -187,7 +228,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:92a63e1672c9ba4454b6a0b7583d2a62448473be58280b554796fd8c95da829d
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220629-7678c99b
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -246,13 +287,8 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
-          command:
-            - "java"
-          args:
-            - "-XX:+CrashOnOutOfMemoryError"
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError"
           # TODO set resources (limits and requests)
           livenessProbe:
             failureThreshold: 3
@@ -304,7 +340,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 spec:
   selector:
     app: kafka-sink-receiver

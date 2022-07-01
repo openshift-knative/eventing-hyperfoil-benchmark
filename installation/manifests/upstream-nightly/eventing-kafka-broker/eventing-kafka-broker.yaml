@@ -17,8 +17,70 @@ metadata:
   name: config-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+  annotations:
+    knative.dev/example-checksum: "57a32008"
 data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # All configurations in this ConfigMap are globally applied to each
+    # resource and there is no way to change them on a per-resource basis,
+    # unless otherwise specified.
+
+    # Producer configuration are documented in https://kafka.apache.org/documentation/#producerconfigs
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.serializer` and `value.serializer`.
+    config-kafka-broker-producer.properties: |
+      key.serializer=org.apache.kafka.common.serialization.StringSerializer
+      value.serializer=io.cloudevents.kafka.CloudEventSerializer
+      acks=all
+
+    # Consumer configuration are documented in https://kafka.apache.org/documentation/#consumerconfigs.
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.deserializer` and `value.deserializer`.
+    config-kafka-broker-consumer.properties: |
+      key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer=io.cloudevents.kafka.CloudEventDeserializer
+      fetch.min.bytes=1
+
+    # Available Vertx HTTPServerOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/core/http/HttpServerOptions.html.
+    #
+    # Each receiver pod creates a single HTTP server.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-broker-httpserver.properties: |
+      idleTimeout=0
+
+    # Available Vertx WebClientOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/ext/web/client/WebClientOptions.html.
+    #
+    # Each egress resource (KafkaSource, Trigger, Subscription) creates an HTTP client in each pod where the resource is
+    # scheduled, meaning that a client isn't shared across multiple resources to provide better isolation.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-broker-webclient.properties: |
+      idleTimeout=10000
   config-kafka-broker-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
     value.serializer=io.cloudevents.kafka.CloudEventSerializer
@@ -35,7 +97,7 @@ data:
     max.request.size=1048576
     partitioner.class=org.apache.kafka.clients.producer.internals.DefaultPartitioner
     receive.buffer.bytes=-1
-    request.timeout.ms=30000
+    request.timeout.ms=2000
     enable.idempotence=false
     max.in.flight.requests.per.connection=5
     metadata.max.age.ms=300000
@@ -53,7 +115,7 @@ data:
     value.deserializer=io.cloudevents.kafka.CloudEventDeserializer
     fetch.min.bytes=1
     heartbeat.interval.ms=3000
-    max.partition.fetch.bytes=65536
+    max.partition.fetch.bytes=1048576
     session.timeout.ms=10000
     # ssl.key.password=
     # ssl.keystore.location=
@@ -64,16 +126,16 @@ data:
     auto.offset.reset=earliest
     client.dns.lookup=use_all_dns_ips
     connections.max.idle.ms=540000
-    default.api.timeout.ms=60000
+    default.api.timeout.ms=2000
     enable.auto.commit=false
     exclude.internal.topics=true
-    fetch.max.bytes=1048576
+    fetch.max.bytes=52428800
     isolation.level=read_uncommitted
     max.poll.interval.ms=300000
-    max.poll.records=100
+    max.poll.records=500
     # partition.assignment.strategy=org.apache.kafka.clients.consumer.CooperativeStickyAssignor
     receive.buffer.bytes=65536
-    request.timeout.ms=30000
+    request.timeout.ms=2000
     # sasl.client.callback.handler.class=
     # sasl.jaas.config=
     # sasl.kerberos.service.name=
@@ -135,7 +197,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 rules:
   - apiGroups:
       - "*"
@@ -166,7 +228,7 @@ metadata:
   name: knative-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -187,7 +249,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-broker-data-plane
@@ -218,7 +280,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-dispatcher
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 spec:
   selector:
     matchLabels:
@@ -228,7 +290,7 @@ spec:
       name: kafka-broker-dispatcher
       labels:
         app: kafka-broker-dispatcher
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -252,7 +314,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-broker-dispatcher
-          image: quay.io/pierdipi/knative-eventing-kafka-broker-dispatcher:v16
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:v20220629-7678c99b
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -311,20 +373,8 @@ spec:
             - name: WAIT_STARTUP_SECONDS
               value: "8"
             - name: JAVA_TOOL_OPTIONS
-              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
-          command:
-            - "java"
-          args:
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+              value: "-XX:+CrashOnOutOfMemoryError"
           # TODO set resources (limits and requests)
-          resources:
-            requests:
-              memory: 2G
-              cpu: 500m
-            limits:
-              memory: 2G
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -357,7 +407,7 @@ spec:
           configMap:
             name: kafka-broker-brokers-triggers
         - name: cache
-          emptyDir: { }
+          emptyDir: {}
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -390,7 +440,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 spec:
   selector:
     matchLabels:
@@ -400,7 +450,7 @@ spec:
       name: kafka-broker-receiver
       labels:
         app: kafka-broker-receiver
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -424,7 +474,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-broker-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:92a63e1672c9ba4454b6a0b7583d2a62448473be58280b554796fd8c95da829d
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220629-7678c99b
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -484,20 +534,8 @@ spec:
             - name: WAIT_STARTUP_SECONDS
               value: "8"
             - name: JAVA_TOOL_OPTIONS
-              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
-          command:
-            - "java"
-          args:
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+              value: "-XX:+CrashOnOutOfMemoryError"
           # TODO set resources (limits and requests)
-          resources:
-            requests:
-              memory: 1G
-              cpu: 500m
-            limits:
-              memory: 1G
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -532,7 +570,7 @@ spec:
           configMap:
             name: config-kafka-broker-data-plane
         - name: cache
-          emptyDir: { }
+          emptyDir: {}
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -548,7 +586,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
 spec:
   selector:
     app: kafka-broker-receiver
