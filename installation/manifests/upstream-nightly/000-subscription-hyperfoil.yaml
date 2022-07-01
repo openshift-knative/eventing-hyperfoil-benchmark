@@ -1,0 +1,438 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: hyperfoil-operator-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: hyperfoils.hyperfoil.io
+spec:
+  group: hyperfoil.io
+  names:
+    categories:
+    - all
+    - hyperfoil
+    kind: Hyperfoil
+    listKind: HyperfoilList
+    plural: hyperfoils
+    shortNames:
+    - hf
+    singular: hyperfoil
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.version
+      name: Version
+      type: string
+    - jsonPath: .spec.route.host
+      name: Route
+      type: string
+    - jsonPath: .spec.persistentVolumeClaim
+      name: PVC
+      type: string
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: Hyperfoil is the Schema for the hyperfoils API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: HyperfoilSpec Configures Hyperfoil Controller and related
+              resources.
+            properties:
+              additionalArgs:
+                description: AdditionalArgs specifies additional arguments to pass
+                  to the Hyperfoil controller.
+                items:
+                  type: string
+                type: array
+              agentDeployTimeout:
+                description: Deploy timeout for agents, in milliseconds.
+                type: integer
+              auth:
+                description: Authentication/authorization settings.
+                properties:
+                  secret:
+                    description: Optional; Name of secret used for basic authentication.
+                      Must contain key 'password'.
+                    type: string
+                type: object
+              image:
+                description: Controller image. If 'version' is defined, too, the tag
+                  is replaced (or appended). Defaults to 'quay.io/hyperfoil/hyperfoil'
+                type: string
+              log:
+                description: 'Name of the config map and optionally its entry (separated
+                  by ''/'': e.g myconfigmap/log4j2-superverbose.xml) storing Log4j2
+                  configuration file. By default the Controller uses its embedded
+                  configuration.'
+                type: string
+              persistentVolumeClaim:
+                description: Name of the PVC hyperfoil should mount for its workdir.
+                type: string
+              postHooks:
+                description: Names of config maps and optionally keys (separated by
+                  '/') holding hooks that run after the run finishes.
+                items:
+                  type: string
+                type: array
+              preHooks:
+                description: Names of config maps and optionally keys (separated by
+                  '/') holding hooks that run before the run starts.
+                items:
+                  type: string
+                type: array
+              route:
+                description: Specification of the exposed route.
+                properties:
+                  host:
+                    description: 'Host for the route leading to Controller REST endpoint.
+                      Example: hyperfoil.apps.cloud.example.com'
+                    type: string
+                  tls:
+                    description: Optional for edge and reencrypt routes, required
+                      for passthrough; Name of the secret hosting `tls.crt`, `tls.key`
+                      and optionally `ca.crt`
+                    type: string
+                  type:
+                    description: Either 'http' (for plain-text routes - not recommended),
+                      'edge', 'reencrypt' or 'passthrough'
+                    type: string
+                type: object
+              secretEnvVars:
+                description: List of secrets in this namespace; each entry from those
+                  secrets will be mapped as environment variable, using the key as
+                  variable name.
+                items:
+                  type: string
+                type: array
+              triggerUrl:
+                description: If this is set the controller does not start benchmark
+                  run right away after hitting /benchmark/my-benchmark/start ; instead
+                  it responds with status 301 and header Location set to concatenation
+                  of this string and 'BENCHMARK=my-benchmark&RUN_ID=xxxx'. CLI interprets
+                  that response as a request to hit CI instance on this URL, assuming
+                  that CI will trigger a new job that will eventually call /benchmark/my-benchmark/start?runId=xxxx
+                  with header 'x-trigger-job'. This is useful if the the CI has to
+                  synchronize Hyperfoil to other benchmarks that don't use this controller
+                  instance.
+                type: string
+              version:
+                description: Tag for controller image. Defaults to version matching
+                  the operator version.
+                type: string
+            type: object
+          status:
+            description: HyperfoilStatus defines the observed state of Hyperfoil
+            properties:
+              lastUpdate:
+                description: RFC 3339 date and time of the last update.
+                format: date-time
+                type: string
+              reason:
+                description: Human readable explanation for the status.
+                type: string
+              status:
+                description: '"One of: ''Ready'', ''Pending'' or ''Error''"'
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hyperfoil-operator-controller-manager
+  namespace: hyperfoil-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: hyperfoil-operator-leader-election-role
+  namespace: hyperfoil-operator-system
+rules:
+- apiGroups:
+  - ""
+  - coordination.k8s.io
+  resources:
+  - configmaps
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: hyperfoil-operator-manager-role
+rules:
+- apiGroups:
+  - apps
+  resourceNames:
+  - hyperfoil-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - persistentvolumeclaims
+  - pods
+  - pods/finalizer
+  - pods/log
+  - pods/status
+  - secrets
+  - serviceaccounts
+  - services
+  verbs:
+  - '*'
+- apiGroups:
+  - hyperfoil.io
+  resources:
+  - hyperfoils
+  verbs:
+  - '*'
+- apiGroups:
+  - hyperfoil.io
+  resources:
+  - hyperfoils/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - hyperfoil.io
+  resources:
+  - hyperfoils/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - '*'
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  - routes/custom-host
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hyperfoil-operator-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hyperfoil-operator-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hyperfoil-operator-leader-election-rolebinding
+  namespace: hyperfoil-operator-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: hyperfoil-operator-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: hyperfoil-operator-controller-manager
+  namespace: hyperfoil-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hyperfoil-operator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hyperfoil-operator-manager-role
+subjects:
+- kind: ServiceAccount
+  name: hyperfoil-operator-controller-manager
+  namespace: hyperfoil-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hyperfoil-operator-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hyperfoil-operator-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: hyperfoil-operator-controller-manager
+  namespace: hyperfoil-operator-system
+---
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: 4032829c.hyperfoil.io
+kind: ConfigMap
+metadata:
+  name: hyperfoil-operator-manager-config
+  namespace: hyperfoil-operator-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: hyperfoil-operator-controller-manager-metrics-service
+  namespace: hyperfoil-operator-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: hyperfoil-operator-controller-manager
+  namespace: hyperfoil-operator-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=127.0.0.1:8080
+        - --leader-elect
+        command:
+        - /manager
+        image: quay.io/pierdipi/hyperfoil-operator:v1
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: hyperfoil-operator-controller-manager
+      terminationGracePeriodSeconds: 10

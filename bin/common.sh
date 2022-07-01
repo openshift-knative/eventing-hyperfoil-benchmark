@@ -6,6 +6,7 @@ default_hyperfoil_server_url="hyperfoil-cluster-hyperfoil.${cluster_domain}"
 export HYPERFOIL_SERVER_URL=${HYPERFOIL_SERVER_URL:-${default_hyperfoil_server_url}}
 export KNATIVE_MANIFESTS=${KNATIVE_MANIFESTS-$default_manifests}
 export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
+export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
 
@@ -36,7 +37,7 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
-  scale_machineset "15" || return $?
+  scale_machineset "20" || return $?
 
   create_namespaces || return $?
 
@@ -49,7 +50,7 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-dispatcher" 5 || return $?
   scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
@@ -83,9 +84,15 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: ${TEST_CASE_NAMESPACE}
+  labels:
+    openshift.io/cluster-monitoring: "true"
 EOF
 
-  oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources"
+  if ${SKIP_CREATE_TEST_RESOURCES}; then
+    return 0
+  fi
+
+  oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources" || return $?
 }
 
 function run() {
