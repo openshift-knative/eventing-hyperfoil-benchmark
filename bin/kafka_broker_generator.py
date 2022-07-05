@@ -11,6 +11,7 @@ parser.add_argument('--hf-output-dir', type=str, dest='hf_output_dir',
                     help='Output directory for Hyperfoil benchmark definition')
 parser.add_argument('--delivery-order', type=str, dest='delivery_order', help='Delivery order', default='ordered')
 parser.add_argument('--name-prefix', type=str, dest='name_prefix', help='Prefix for resource names')
+parser.add_argument('--payload-file', type=str, dest='payload_file', help='File path with the payload content')
 args = parser.parse_args()
 
 triggers = []
@@ -196,7 +197,7 @@ for trigger_name in triggers:
 
 """
 
-with open("payloads/payload.68KB.txt") as f:
+with open(args.payload_file) as f:
     payload = f.read().replace("\n", "")
 
 for broker_name in brokers:
