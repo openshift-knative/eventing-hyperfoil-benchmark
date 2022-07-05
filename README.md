@@ -1,5 +1,20 @@
 # Eventing performance tests
 
+## Running tests
+
+```shell
+# Run Kafka broker tests using the upstream nightly artifacts 
+# in installation/manifests/upstream-nightly
+make test-kafka-broker-upstream-nightly
+
+# Run Kafka broker tests using the product nightly (Serverless Operator main) 
+# artifacts in installation/manifests/product-nightly
+make test-kafka-broker-upstream-nightly
+
+# Run a specific test using an existing Serverless or Knative installation
+TEST_CASE=tests/broker/kafka/p10-r3-ordered ./bin/run_test.sh
+```
+
 ## Generating Kafka Broker test cases
 
 ```shell
