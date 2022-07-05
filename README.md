@@ -8,5 +8,7 @@
   --num-triggers 10 \
   --resources-output-dir tests/broker/kafka/p10-r3-ord-b100-t10/resources \
   --hf-output-dir tests/broker/kafka/p10-r3-ord-b100-t10 \
-  --name-prefix broker-ord
+  --name-prefix broker-ord \
+  --payload-file payloads/payload.68KB.txt \
+  --delivery-order ordered
 ```
