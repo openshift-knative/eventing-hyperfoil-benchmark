@@ -156,8 +156,8 @@ spec:
               memory: "500Mi"
               cpu: "1"
             requests:
-              memory: "300Mi"
-              cpu: "500m"
+              memory: "100Mi"
+              cpu: "50m"
           volumeMounts:
           - mountPath: /etc/sacura
             name: config
