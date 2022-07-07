@@ -23,6 +23,9 @@
 #    SKIP_DELETE_RESOURCES
 #      skip resource clean up.
 #      Default: false
+#    NUM_WORKER_NODES
+#      number of worker nodes.
+#      default: 20 (CI nodes are small and we need to create thousands of pods)
 
 set -euo pipefail
 

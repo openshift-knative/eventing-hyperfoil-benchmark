@@ -9,6 +9,7 @@ export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
+export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"20"}
 
 alias kubectl=oc
 
@@ -37,7 +38,7 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
-  scale_machineset "20" || return $?
+  scale_machineset "${NUM_WORKER_NODES}" || return $?
 
   create_namespaces || return $?
 
