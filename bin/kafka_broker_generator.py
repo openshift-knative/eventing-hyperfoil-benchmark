@@ -80,6 +80,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {trigger_name}
+  labels:
+    app: {trigger_name}
 spec:
   type: ClusterIP
   selector:
