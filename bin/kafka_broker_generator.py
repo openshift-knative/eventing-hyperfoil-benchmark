@@ -20,6 +20,8 @@ brokers = []
 os.makedirs(args.hf_output_dir, mode=0o777, exist_ok=True)
 os.makedirs(args.resources_output_dir, mode=0o777, exist_ok=True)
 
+serviceName = args.name_prefix + "-svc"
+
 for b_idx in range(args.num_brokers):
     broker_name = f"{args.name_prefix}-{b_idx}"
     brokers.append(broker_name)
@@ -74,18 +76,19 @@ spec:
     ref:
       apiVersion: v1
       kind: Service
-      name: {trigger_name}
+      name: {serviceName}
+    uri: "/{trigger_name}"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {trigger_name}
+  name: {serviceName}
   labels:
-    app: {trigger_name}
+    app: {serviceName}
 spec:
   type: ClusterIP
   selector:
-    app: {trigger_name}
+    app: {serviceName}
   ports:
     - port: 80
       protocol: TCP
@@ -117,32 +120,32 @@ data:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {trigger_name}
+  name: {serviceName}
   labels:
-    app: {trigger_name}
+    app: {serviceName}
 spec:
   endpoints:
     - path: /metrics
       port: http-metrics
   selector:
     matchLabels:
-      app: {trigger_name}
+      app: {serviceName}
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {trigger_name}
+  name: {serviceName}
   labels:
-    app: {trigger_name}
+    app: {serviceName}
 spec:
   selector:
     matchLabels:
-      app: {trigger_name}
+      app: {serviceName}
   template:
     metadata:
       labels:
-        app: {trigger_name}
+        app: {serviceName}
     spec:
       containers:
         - name: receiver
@@ -152,12 +155,9 @@ spec:
             - "/etc/sacura/sacura.yaml"
           imagePullPolicy: Always
           resources:
-            limits:
-              memory: "500Mi"
-              cpu: "1"
             requests:
-              memory: "100Mi"
-              cpu: "50m"
+              memory: "1Gi"
+              cpu: "1"
           volumeMounts:
           - mountPath: /etc/sacura
             name: config
@@ -170,7 +170,7 @@ spec:
               name: http-metrics
           env:
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "trigger={trigger_name}"
+              value: "service={serviceName}"
             - name: OTEL_SERVICE_NAME
               value: "sacura"
       volumes:

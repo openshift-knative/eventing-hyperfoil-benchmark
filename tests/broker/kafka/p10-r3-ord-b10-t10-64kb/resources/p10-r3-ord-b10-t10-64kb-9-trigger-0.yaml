@@ -12,18 +12,19 @@ spec:
     ref:
       apiVersion: v1
       kind: Service
-      name: p10-r3-ord-b10-t10-64kb-9-trigger-0
+      name: p10-r3-ord-b10-t10-64kb-svc
+    uri: "/p10-r3-ord-b10-t10-64kb-9-trigger-0"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: p10-r3-ord-b10-t10-64kb-9-trigger-0
+  name: p10-r3-ord-b10-t10-64kb-svc
   labels:
-    app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+    app: p10-r3-ord-b10-t10-64kb-svc
 spec:
   type: ClusterIP
   selector:
-    app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+    app: p10-r3-ord-b10-t10-64kb-svc
   ports:
     - port: 80
       protocol: TCP
@@ -55,32 +56,32 @@ data:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: p10-r3-ord-b10-t10-64kb-9-trigger-0
+  name: p10-r3-ord-b10-t10-64kb-svc
   labels:
-    app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+    app: p10-r3-ord-b10-t10-64kb-svc
 spec:
   endpoints:
     - path: /metrics
       port: http-metrics
   selector:
     matchLabels:
-      app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+      app: p10-r3-ord-b10-t10-64kb-svc
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: p10-r3-ord-b10-t10-64kb-9-trigger-0
+  name: p10-r3-ord-b10-t10-64kb-svc
   labels:
-    app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+    app: p10-r3-ord-b10-t10-64kb-svc
 spec:
   selector:
     matchLabels:
-      app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+      app: p10-r3-ord-b10-t10-64kb-svc
   template:
     metadata:
       labels:
-        app: p10-r3-ord-b10-t10-64kb-9-trigger-0
+        app: p10-r3-ord-b10-t10-64kb-svc
     spec:
       containers:
         - name: receiver
@@ -90,12 +91,9 @@ spec:
             - "/etc/sacura/sacura.yaml"
           imagePullPolicy: Always
           resources:
-            limits:
-              memory: "500Mi"
-              cpu: "1"
             requests:
-              memory: "100Mi"
-              cpu: "50m"
+              memory: "1Gi"
+              cpu: "1"
           volumeMounts:
           - mountPath: /etc/sacura
             name: config
@@ -108,7 +106,7 @@ spec:
               name: http-metrics
           env:
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "trigger=p10-r3-ord-b10-t10-64kb-9-trigger-0"
+              value: "service=p10-r3-ord-b10-t10-64kb-svc"
             - name: OTEL_SERVICE_NAME
               value: "sacura"
       volumes:

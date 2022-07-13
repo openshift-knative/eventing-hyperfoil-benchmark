@@ -1,0 +1,9 @@
+spec:
+  template:
+    spec:
+      containers:
+        - name: kafka-broker-receiver
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1"

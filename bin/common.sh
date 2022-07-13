@@ -9,7 +9,7 @@ export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
-export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"20"}
+export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"25"}
 
 alias kubectl=oc
 
@@ -42,6 +42,8 @@ function apply_manifests() {
 
   create_namespaces || return $?
 
+  oc apply -f tests/monitoring.yaml
+
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
 
@@ -51,7 +53,10 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  scale_deployment "kafka-broker-dispatcher" 5 || return $?
+  oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
+  oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
+
+  scale_deployment "kafka-broker-dispatcher" 2 || return $?
   scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
@@ -247,6 +252,6 @@ function scale_deployment() {
   deployment=${1:?Pass deployment as arg[1]} || return $?
   replicas=${2:?Pass replicas as arg[1]} || return $?
 
-  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}" || return $?
+  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
   oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }

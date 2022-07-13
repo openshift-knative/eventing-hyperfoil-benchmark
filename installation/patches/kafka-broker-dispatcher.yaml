@@ -1,0 +1,9 @@
+spec:
+  template:
+    spec:
+      containers:
+        - name: kafka-broker-dispatcher
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1"

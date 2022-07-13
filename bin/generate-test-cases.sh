@@ -8,10 +8,10 @@ rm -rf tests/broker/kafka
 
 ./bin/kafka_broker_generator.py \
   --num-brokers 100 \
-  --num-triggers 10 \
-  --resources-output-dir tests/broker/kafka/p10-r3-ord-b100-t10-5b/resources \
-  --hf-output-dir tests/broker/kafka/p10-r3-ord-b100-t10-5b \
-  --name-prefix p10-r3-ord-b100-t10-5b \
+  --num-triggers 5 \
+  --resources-output-dir tests/broker/kafka/p10-r3-ord-b100-t5-5b/resources \
+  --hf-output-dir tests/broker/kafka/p10-r3-ord-b100-t5-5b \
+  --name-prefix p10-r3-ord-b100-t5-5b \
   --payload-file payloads/payload.5B.txt \
   --delivery-order ordered
 
@@ -37,10 +37,10 @@ rm -rf tests/broker/kafka
 
 ./bin/kafka_broker_generator.py \
   --num-brokers 100 \
-  --num-triggers 10 \
-  --resources-output-dir tests/broker/kafka/p10-r3-unord-b100-t10-5b/resources \
-  --hf-output-dir tests/broker/kafka/p10-r3-unord-b100-t10-5b \
-  --name-prefix p10-r3-unord-b100-t10-5b \
+  --num-triggers 5 \
+  --resources-output-dir tests/broker/kafka/p10-r3-unord-b100-t5-5b/resources \
+  --hf-output-dir tests/broker/kafka/p10-r3-unord-b100-t5-5b \
+  --name-prefix p10-r3-unord-b100-t5-5b \
   --payload-file payloads/payload.5B.txt \
   --delivery-order unordered
 
