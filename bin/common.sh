@@ -43,6 +43,7 @@ function apply_manifests() {
   create_namespaces || return $?
 
   oc apply -f tests/monitoring.yaml
+  oc apply -Rf installation/alerts
 
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
@@ -137,6 +138,8 @@ function run() {
 
   # Run benchmark
   $(dirname "${BASH_SOURCE[0]}")/run_benchmark.py || return $?
+
+  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" "https://$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')/api/v1/alerts?unprocessed=true&inhibited=true&silenced=true&active=true" | jq
 }
 
 function scale_machineset() {

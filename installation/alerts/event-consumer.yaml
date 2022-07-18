@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: event-consumer
+  namespace: perf-test
+spec:
+  groups:
+    - name: OpenShiftServerlessEventConsumer
+      rules:
+        # e2e latency - MUST NOT fire
+        - alert: OpenShiftServerlessEventConsumerE2ELatency
+          expr: "( sum(rate(latency_e2e_ms_bucket{le='60000', namespace='perf-test'}[1m])) by (request_path) / sum(rate(latency_e2e_ms_count{namespace='perf-test'}[1m])) by (request_path) < 0.95 )"
+        # throughput - MUST fire
+        - alert: OpenShiftServerlessEventConsumerThroughput
+          expr: "( sum(irate(container_network_transmit_bytes_total{job='kubelet', namespace='knative-eventing'}[5m]) * on (namespace,pod) group_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace='knative-eventing', workload=~'kafka-broker-dispatcher'}) > 50000000 )"

@@ -9,7 +9,7 @@ make test-kafka-broker-upstream-nightly
 
 # Run Kafka broker tests using the product nightly (Serverless Operator main) 
 # artifacts in installation/manifests/product-nightly
-make test-kafka-broker-upstream-nightly
+make test-kafka-broker-midstream-nightly
 
 # Run a specific test using an existing Serverless or Knative installation
 TEST_CASE=tests/broker/kafka/p10-r3-ordered ./bin/run_test.sh

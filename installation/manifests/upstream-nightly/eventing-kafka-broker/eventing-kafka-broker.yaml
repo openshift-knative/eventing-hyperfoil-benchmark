@@ -407,7 +407,8 @@ spec:
           configMap:
             name: kafka-broker-brokers-triggers
         - name: cache
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 15Mi
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
