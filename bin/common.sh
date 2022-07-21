@@ -21,6 +21,15 @@ kind: Namespace
 metadata:
   name: kafka
 EOF
+
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${TEST_CASE_NAMESPACE}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+EOF
 }
 
 function delete_test_namespace {
@@ -42,9 +51,6 @@ function apply_manifests() {
 
   create_namespaces || return $?
 
-  oc apply -f tests/monitoring.yaml
-  oc apply -Rf installation/alerts
-
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
 
@@ -53,12 +59,6 @@ function apply_manifests() {
     envsubst <"${x}" | oc apply -f - || return $?
     wait_for_operators_to_be_running || return $?
   done
-
-  oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
-  oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
-
-  scale_deployment "kafka-broker-dispatcher" 2 || return $?
-  scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
 }
@@ -84,7 +84,6 @@ function delete_manifests() {
 }
 
 function apply_test_resources() {
-  wait_for_workloads_to_be_running || return $?
 
   cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -95,11 +94,22 @@ metadata:
     openshift.io/cluster-monitoring: "true"
 EOF
 
+  oc apply -f tests/monitoring.yaml || return $?
+  oc apply -n "${TEST_CASE_NAMESPACE}" -Rf installation/alerts || return $?
+
+  oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
+  oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
+
+  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-receiver" 2 || return $?
+
   if ${SKIP_CREATE_TEST_RESOURCES}; then
     return 0
   fi
 
   oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources" || return $?
+
+  wait_for_workloads_to_be_running || return $?
 }
 
 function run() {
@@ -120,6 +130,8 @@ function run() {
   wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
+
+  wait_for_workloads_to_be_running || return $?
   wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.

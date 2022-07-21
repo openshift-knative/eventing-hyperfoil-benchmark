@@ -248,7 +248,7 @@ staircase:
   initialUsersPerSec: 10
   incrementUsersPerSec: 10
   steadyStateDuration: 300s
-  maxIterations: 8
+  maxIterations: 5
   maxSessions: 20000
   rampUpDuration: 120s
   scenario:
