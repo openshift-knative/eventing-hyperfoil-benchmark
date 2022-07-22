@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -xeuo pipefail
 
 export SKIP_DELETE_RESOURCES=true
 export TEST_CASE_NAMESPACE=perf-test
