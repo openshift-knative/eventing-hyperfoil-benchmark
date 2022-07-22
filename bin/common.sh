@@ -268,5 +268,6 @@ function scale_deployment() {
   replicas=${2:?Pass replicas as arg[1]} || return $?
 
   oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
+  sleep 10
   oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }
