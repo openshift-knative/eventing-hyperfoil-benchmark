@@ -33,3 +33,5 @@ hyperfoil-0.19/
 current.yaml
 
 .kubeconfig
+
+_output/

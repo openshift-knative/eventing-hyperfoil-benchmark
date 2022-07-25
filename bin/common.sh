@@ -10,6 +10,7 @@ export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
 export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"25"}
+export OUTPUT_DIR=${OUTPUT_DIR:-"_output"}
 
 alias kubectl=oc
 
@@ -47,7 +48,13 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
+  oc apply -f tests/custom-pidslimit.yaml || return $?
+  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit
+  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+
   scale_machineset "${NUM_WORKER_NODES}" || return $?
+
+  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
 
   create_namespaces || return $?
 
@@ -149,9 +156,13 @@ function run() {
   curl -v "${HYPERFOIL_SERVER_URL}/benchmark"
 
   # Run benchmark
-  $(dirname "${BASH_SOURCE[0]}")/run_benchmark.py || return $?
+  "$(dirname "${BASH_SOURCE[0]}")"/run_benchmark.py || return $?
 
-  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" "https://$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')/api/v1/alerts?unprocessed=true&inhibited=true&silenced=true&active=true" | jq
+  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" \
+    "https://$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')/api/v1/alerts?unprocessed=true&inhibited=true&silenced=true&active=true" | jq \
+    >"${OUTPUT_DIR}/alerts.json"
+
+  "$(dirname "${BASH_SOURCE[0]}")"/verify_alerts.py --alerts-filepath "${OUTPUT_DIR}/alerts.json" || return $?
 }
 
 function scale_machineset() {
