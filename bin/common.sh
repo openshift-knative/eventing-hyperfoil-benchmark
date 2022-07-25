@@ -58,6 +58,8 @@ function apply_manifests() {
 
   create_namespaces || return $?
 
+  mkdir -p "${OUTPUT_DIR}"
+
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
 
