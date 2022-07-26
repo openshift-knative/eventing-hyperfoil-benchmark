@@ -132,6 +132,8 @@ function run() {
   #     modified; please apply your changes to the latest version and try again
   apply_test_resources || apply_test_resources || return $?
 
+  scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" 10 "${TEST_CASE_NAMESPACE}"
+
   # Wait for all possible resources to be ready
   wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
   wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
@@ -279,8 +281,9 @@ function echo_input_variables() {
 function scale_deployment() {
   deployment=${1:?Pass deployment as arg[1]} || return $?
   replicas=${2:?Pass replicas as arg[1]} || return $?
+  ns=${3:-"knative-eventing"}
 
-  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
+  oc -n "${ns}" scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
   sleep 10
-  oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
+  oc -n "${ns}" wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }
