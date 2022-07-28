@@ -32,11 +32,9 @@ alerts = alerts_response['data']
 alerts_err = []
 
 for alert in alerts:
-    if alert['labels']['namespace'] != namespace:
-        continue
 
     alert_name = alert['labels']['alertname']
-    print(f"Found {alert_name} alert in {namespace}")
+    print(f"Found {alert_name} alert")
 
     if alert_name not in must_fire_alerts:
         alerts_err.append({"unexpected": alert})
