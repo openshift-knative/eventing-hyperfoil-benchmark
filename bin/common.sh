@@ -104,7 +104,12 @@ metadata:
 EOF
 
   oc apply -f tests/monitoring.yaml || return $?
-  oc apply -n "${TEST_CASE_NAMESPACE}" -Rf installation/alerts || return $?
+  oc apply -n "${TEST_CASE_NAMESPACE}" -f installation/alerts || return $?
+
+  # Add custom alert manager configuration
+  oc -n openshift-monitoring create secret generic alertmanager-main \
+    --from-file=alertmanager.yaml=installation/alerts/alertmanager/alert-manager-config.yaml \
+    --dry-run=client -o=yaml | oc -n openshift-monitoring replace secret --filename=-
 
   oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
   oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
@@ -161,14 +166,6 @@ function run() {
 
   # Run benchmark
   "$(dirname "${BASH_SOURCE[0]}")"/run_benchmark.py || return $?
-
-  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" \
-    "https://$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')/api/v1/alerts?unprocessed=true&inhibited=true&silenced=true&active=true" | jq \
-    >"${ARTIFACT_DIR}/${TEST_CASE}/alerts.json"
-
-  cat "${ARTIFACT_DIR}/${TEST_CASE}/alerts.json"
-
-  #  "$(dirname "${BASH_SOURCE[0]}")"/verify_alerts.py --alerts-filepath "${ARTIFACT_DIR}/alerts.json" || return $?
 }
 
 function scale_machineset() {

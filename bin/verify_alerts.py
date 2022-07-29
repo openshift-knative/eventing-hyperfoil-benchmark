@@ -9,12 +9,6 @@ must_fire_alerts = {
     "OpenShiftServerlessEventProducerThroughput",
 }
 
-ignore_alerts = {
-    "PodDisruptionBudgetAtLimit",
-}
-
-namespace = "knative-eventing"
-
 parser = argparse.ArgumentParser(description="Verify openshift alerts")
 parser.add_argument('--alerts-filepath', type=str, dest="alerts_filepath", help="Fired alerts file path", required=True)
 args = parser.parse_args()
@@ -46,6 +40,6 @@ if len(must_fire_alerts) > 0:
 
 if len(alerts_err) > 0:
     print()
-    print(f"Found unexpected alerts in namespace {namespace}")
+    print(f"Found unexpected alerts")
     print(json.dumps(alerts_err, sort_keys=True, indent=4))
     sys.exit(1)

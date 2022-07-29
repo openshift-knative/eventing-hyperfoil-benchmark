@@ -13,3 +13,5 @@ spec:
         # throughput - MUST fire
         - alert: OpenShiftServerlessEventProducerThroughput
           expr: "( sum(irate(container_network_transmit_bytes_total{job='kubelet', namespace='knative-eventing'}[5m]) * on (namespace,pod) group_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace='knative-eventing', workload=~'kafka-broker-receiver'}) > 25000000 )"
+          labels:
+            eventing: "true"

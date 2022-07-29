@@ -9,13 +9,25 @@ spec:
       rules:
         - alert: OpenShiftServerlessAdminKafkaBrokerReceiverRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-broker-receiver', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"
         - alert: OpenShiftServerlessAdminKafkaBrokerDispatcherRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-broker-dispatcher', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"
         - alert: OpenShiftServerlessAdminKafkaChannelReceiverRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-channel-receiver', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"
         - alert: OpenShiftServerlessAdminKafkaChannelDispatcherRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-channel-dispatcher', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"
         - alert: OpenShiftServerlessAdminKafkaSinkReceiverRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-sink-receiver', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"
         - alert: OpenShiftServerlessAdminKafkaSourceDispatcherRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-source-dispatcher', namespace='knative-eventing'} > 0 )"
+          labels:
+            eventing: "true"

@@ -1,0 +1,52 @@
+global:
+  resolve_timeout: 5m
+inhibit_rules:
+  - equal:
+      - namespace
+      - alertname
+    source_matchers:
+      - severity = critical
+    target_matchers:
+      - severity =~ warning|info
+  - equal:
+      - namespace
+      - alertname
+    source_matchers:
+      - severity = warning
+    target_matchers:
+      - severity = info
+receivers:
+  - name: Default
+  - name: Watchdog
+  - name: Critical
+  - name: alertmanager-webhook-logger
+    webhook_configs:
+      - url: 'http://alertmanager-webhook-logger.default.svc'
+route:
+  group_by:
+    - namespace
+  group_interval: 5m
+  group_wait: 30s
+  receiver: Default
+  repeat_interval: 10m
+  routes:
+    - matchers:
+        - alertname = Watchdog
+      continue: true
+      receiver: Watchdog
+    - matchers:
+        - severity = critical
+      continue: true
+      receiver: Critical
+    - matchers:
+        - severity = critical
+      continue: true
+      receiver: alertmanager-webhook-logger
+    - matchers:
+        - alertname = Watchdog
+      continue: true
+      receiver: alertmanager-webhook-logger
+    - matchers:
+        - eventing = true
+      continue: true
+      receiver: alertmanager-webhook-logger

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: alertmanager-webhook-logger
+  name: alertmanager-webhook-logger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager-webhook-logger
+  template:
+    metadata:
+      labels:
+        app: alertmanager-webhook-logger
+    spec:
+      containers:
+        - image: quay.io/pierdipi/alertmanager-webhook-logger-3b5723ee51a404f252f8a30d03820a50@sha256:4fb10b7cedbdb1cbb2c24e46d4236c384f808446c634b1fe8c11c1ea49f3dc4b
+          name: alertmanager-webhook-logger
+          resources:
+            requests:
+              cpu: 500m
+              memory: 100M
+          ports:
+            - containerPort: 6725
+              name: http
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: alertmanager-webhook-logger
+  name: alertmanager-webhook-logger
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 6725
+  selector:
+    app: alertmanager-webhook-logger
+  type: ClusterIP
+
+---
