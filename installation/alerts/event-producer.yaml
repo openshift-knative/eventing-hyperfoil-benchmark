@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: event-producer
+  namespace: perf-test
+spec:
+  groups:
+    - name: OpenshiftServerlessEventProducer
+      rules:
+        # - alert: OpenShiftServerlessEventProducerLatency - measured by Hyperfoil, see `hf.yaml` files
+        # TODO we might want to also add an alert on top of of the Hyperfoil measurement as safety check using the "dispatch latency" measured by the receivers
+
+        # throughput - MUST fire
+        - alert: OpenShiftServerlessEventProducerThroughput
+          expr: "( sum(irate(container_network_transmit_bytes_total{job='kubelet', namespace='knative-eventing'}[5m]) * on (namespace,pod) group_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace='knative-eventing', workload=~'kafka-broker-receiver'}) > 25000000 )"
+          labels:
+            eventing: "true"

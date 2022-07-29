@@ -9,7 +9,8 @@ export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
-export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"20"}
+export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"15"}
+export ARTIFACT_DIR=${ARTIFACT_DIR:-"_output"}
 
 alias kubectl=oc
 
@@ -20,6 +21,15 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: kafka
+EOF
+
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${TEST_CASE_NAMESPACE}
+  labels:
+    openshift.io/cluster-monitoring: "true"
 EOF
 }
 
@@ -38,9 +48,17 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
+  oc apply -f tests/custom-pidslimit.yaml || return $?
+  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit
+  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+
   scale_machineset "${NUM_WORKER_NODES}" || return $?
 
+  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+
   create_namespaces || return $?
+
+  mkdir -p "${ARTIFACT_DIR}/${TEST_CASE}"
 
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
@@ -50,9 +68,6 @@ function apply_manifests() {
     envsubst <"${x}" | oc apply -f - || return $?
     wait_for_operators_to_be_running || return $?
   done
-
-  scale_deployment "kafka-broker-dispatcher" 5 || return $?
-  scale_deployment "kafka-broker-receiver" 2 || return $?
 
   wait_for_workloads_to_be_running || exit 1
 }
@@ -78,7 +93,6 @@ function delete_manifests() {
 }
 
 function apply_test_resources() {
-  wait_for_workloads_to_be_running || return $?
 
   cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -89,11 +103,27 @@ metadata:
     openshift.io/cluster-monitoring: "true"
 EOF
 
+  oc apply -f tests/monitoring.yaml || return $?
+  oc apply -n "${TEST_CASE_NAMESPACE}" -f installation/alerts || return $?
+
+  # Add custom alert manager configuration
+  oc -n openshift-monitoring create secret generic alertmanager-main \
+    --from-file=alertmanager.yaml=installation/alerts/alertmanager/alert-manager-config.yaml \
+    --dry-run=client -o=yaml | oc -n openshift-monitoring replace secret --filename=-
+
+  oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
+  oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
+
+  scale_deployment "kafka-broker-dispatcher" 3 || return $?
+  scale_deployment "kafka-broker-receiver" 2 || return $?
+
   if ${SKIP_CREATE_TEST_RESOURCES}; then
     return 0
   fi
 
   oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources" || return $?
+
+  wait_for_workloads_to_be_running || return $?
 }
 
 function run() {
@@ -107,6 +137,8 @@ function run() {
   #     modified; please apply your changes to the latest version and try again
   apply_test_resources || apply_test_resources || return $?
 
+  scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" 10 "${TEST_CASE_NAMESPACE}"
+
   # Wait for all possible resources to be ready
   wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
   wait_for_resources_to_be_ready "triggers.eventing.knative.dev" || return $?
@@ -114,6 +146,8 @@ function run() {
   wait_for_resources_to_be_ready "subscriptions.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
+
+  wait_for_workloads_to_be_running || return $?
   wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.
@@ -131,7 +165,7 @@ function run() {
   curl -v "${HYPERFOIL_SERVER_URL}/benchmark"
 
   # Run benchmark
-  $(dirname "${BASH_SOURCE[0]}")/run_benchmark.py || return $?
+  "$(dirname "${BASH_SOURCE[0]}")"/run_benchmark.py || return $?
 }
 
 function scale_machineset() {
@@ -246,7 +280,9 @@ function echo_input_variables() {
 function scale_deployment() {
   deployment=${1:?Pass deployment as arg[1]} || return $?
   replicas=${2:?Pass replicas as arg[1]} || return $?
+  ns=${3:-"knative-eventing"}
 
-  oc -n knative-eventing scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale down to 0 ${deployment}" || return $?
-  oc -n knative-eventing wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
+  oc -n "${ns}" scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
+  sleep 10
+  oc -n "${ns}" wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
 }
