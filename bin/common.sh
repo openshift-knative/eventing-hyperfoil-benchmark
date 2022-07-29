@@ -9,7 +9,7 @@ export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
-export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"25"}
+export NUM_WORKER_NODES=${NUM_WORKER_NODES:-"15"}
 export ARTIFACT_DIR=${ARTIFACT_DIR:-"_output"}
 
 alias kubectl=oc
