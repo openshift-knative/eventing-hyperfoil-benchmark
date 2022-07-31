@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
   annotations:
     knative.dev/example-checksum: "6ce544b6"
 data:
@@ -132,7 +132,7 @@ data:
     isolation.level=read_uncommitted
     max.poll.interval.ms=300000
     max.poll.records=500
-    # partition.assignment.strategy=org.apache.kafka.clients.consumer.CooperativeStickyAssignor
+    partition.assignment.strategy=org.apache.kafka.clients.consumer.StickyAssignor
     receive.buffer.bytes=65536
     request.timeout.ms=2000
     # sasl.client.callback.handler.class=
@@ -196,7 +196,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 rules:
   - apiGroups:
       - "*"
@@ -227,7 +227,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -248,7 +248,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -279,7 +279,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 spec:
   selector:
     matchLabels:
@@ -289,7 +289,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+        kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -313,7 +313,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-channel-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:v20220629-7678c99b
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:v20220727-8b053b82
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -439,7 +439,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 spec:
   selector:
     matchLabels:
@@ -449,7 +449,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+        kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -473,7 +473,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-channel-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220629-7678c99b
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220727-8b053b82
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -585,7 +585,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "8b053b82cbce72965958f86a5643b9039e675779"
 spec:
   selector:
     app: kafka-channel-receiver
