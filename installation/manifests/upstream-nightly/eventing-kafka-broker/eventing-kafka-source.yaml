@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -97,7 +97,7 @@ data:
     value.deserializer=io.cloudevents.kafka.CloudEventDeserializer
     fetch.min.bytes=1
     heartbeat.interval.ms=3000
-    max.partition.fetch.bytes=1048576
+    max.partition.fetch.bytes=65536
     session.timeout.ms=10000
     # ssl.key.password=
     # ssl.keystore.location=
@@ -114,8 +114,8 @@ data:
     fetch.max.bytes=52428800
     isolation.level=read_uncommitted
     max.poll.interval.ms=300000
-    max.poll.records=500
-    # partition.assignment.strategy=org.apache.kafka.clients.consumer.CooperativeStickyAssignor
+    max.poll.records=50
+    partition.assignment.strategy=org.apache.kafka.clients.consumer.StickyAssignor
     receive.buffer.bytes=65536
     request.timeout.ms=2000
     # sasl.client.callback.handler.class=
@@ -157,6 +157,7 @@ data:
     # ssl.trustmanager.algorithm
   config-kafka-source-webclient.properties: |
     idleTimeout=10000
+    maxPoolSize=100
 
 ---
 # Copyright 2021 The Knative Authors
@@ -177,7 +178,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
 rules:
   - apiGroups:
       - "*"
@@ -208,7 +209,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -229,7 +230,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -260,7 +261,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
 spec:
   serviceName: kafka-source-dispatcher
   podManagementPolicy: "Parallel"
@@ -273,7 +274,7 @@ spec:
       labels:
         app: kafka-source-dispatcher
         app.kubernetes.io/component: kafka-dispatcher
-        kafka.eventing.knative.dev/release: "7678c99b6f802f16367a7b3fdcff2f06c5d485e4"
+        kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -297,7 +298,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:v20220629-7678c99b
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher:v20220803-7d7f3c80
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -356,7 +357,7 @@ spec:
             - name: WAIT_STARTUP_SECONDS
               value: "8"
             - name: JAVA_TOOL_OPTIONS
-              value: "-XX:+CrashOnOutOfMemoryError"
+              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
           resources:
             requests:
               cpu: 1000m
@@ -375,8 +376,10 @@ spec:
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
-            tcpSocket:
+            httpGet:
               port: 9090
+              path: /metrics
+              scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
