@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -111,7 +111,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
 rules:
   - apiGroups:
       - "*"
@@ -142,7 +142,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -163,7 +163,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -194,7 +194,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
 spec:
   selector:
     matchLabels:
@@ -204,7 +204,7 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+        kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -228,7 +228,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220803-7d7f3c80
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220818-6f0c657a
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -340,7 +340,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "7d7f3c808bb8934a145722e1d5a281dc1e4621d0"
+    kafka.eventing.knative.dev/release: "6f0c657a60aaa45d8e2a272f7e594c212c779f52"
 spec:
   selector:
     app: kafka-sink-receiver
