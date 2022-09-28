@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 manifests_dir="installation/manifests/product"
 default_manifests="${manifests_dir}/000-subscription-serverless.yaml,${manifests_dir}/000-subscription-hyperfoil.yaml,${manifests_dir}/000-subscription-amq-streams.yaml,${manifests_dir}/100-kafka.yaml,${manifests_dir}/100-hyperfoil.yaml,${manifests_dir}/100-knative-eventing.yaml,${manifests_dir}/100-knative-kafka.yaml"
 
@@ -49,7 +51,7 @@ function delete_namespaces {
 
 function apply_manifests() {
   oc apply -f tests/custom-pidslimit.yaml || return $?
-  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit
+  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit --overwrite
   oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
 
   scale_machineset "${NUM_WORKER_NODES}" || return $?
@@ -197,6 +199,8 @@ function wait_for_resources_to_be_ready() {
 function wait_for_operators_to_be_running() {
   sleep 10 # Workaround for https://github.com/kubernetes/kubernetes/issues/109489
 
+  # oc 4.7.0 doesn't have the oc wait --for=jsonpath=... feature
+  # works with oc 4.11.5
   oc get subscription.operators.coreos.com -n openshift-operators |
     awk '{print $1}' | # Extract resource name
     tail -n +2 |       # skip header
