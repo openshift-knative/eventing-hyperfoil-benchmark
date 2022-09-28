@@ -1,3 +1,5 @@
+# Specify some production-like arbitrary resource specs.
+
 spec:
   template:
     spec:

@@ -64,3 +64,20 @@ Comparing runs:
   --payload-file payloads/payload.68KB.txt \
   --delivery-order ordered
 ```
+
+## Notes:
+- Upstream nightly manifests pushed by a bot (https://github.com/openshift-knative/eventing-hyperfoil-benchmark/blob/main/.github/workflows/scheduled-update-nightlies.yaml)
+
+- There is no automation for product and product-nightly manifests yet
+
+- Overall test duration is around 1.5 hours: 30 mins for cluster scale up, 60 mins for test run
+
+- Patches in `installation/patches` are applied to manifests. This means, there can be some differences between the release manifests and the manifests used in the tests.
+  For example, the resource specifications are modified to mimic what we imagine the production setup would be. This is done to make the tests more realistic (NOTE: need
+  to elaborate on the arbitrary numbers and have a scientific basis for them).
+
+- Similarly, some deployments might be scaled up/down to more/fewer replicas than the release manifests.
+
+- TODO: purpose of `vertx-receiver`
+
+- TODO: explanation for things in `installation/alerts`
