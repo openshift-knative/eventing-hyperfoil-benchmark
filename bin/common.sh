@@ -199,8 +199,6 @@ function wait_for_resources_to_be_ready() {
 function wait_for_operators_to_be_running() {
   sleep 10 # Workaround for https://github.com/kubernetes/kubernetes/issues/109489
 
-  # oc 4.7.0 doesn't have the oc wait --for=jsonpath=... feature
-  # works with oc 4.11.5
   oc get subscription.operators.coreos.com -n openshift-operators |
     awk '{print $1}' | # Extract resource name
     tail -n +2 |       # skip header
