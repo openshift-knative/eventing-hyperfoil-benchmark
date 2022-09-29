@@ -9,11 +9,16 @@ spec:
       rules:
         # e2e latency - MUST NOT fire
         - alert: OpenShiftServerlessEventConsumerE2ELatency
+          # %95 of the requests have e2e latency of max 60s (over a 1 min window)
+          # This is evaluated per trigger and not cumulative. Thus, an alert is fired a single trigger fails to have this.
+          # We define buckets for the `latency_e2e_ms` histogram in the `event-consumer` service.
+          # One of the buckets is `le: 60000` which means that the latency is less than 60s.
           expr: "( sum(rate(latency_e2e_ms_bucket{le='60000', namespace='perf-test'}[1m])) by (request_path) / sum(rate(latency_e2e_ms_count{namespace='perf-test'}[1m])) by (request_path) < 0.95 )"
           labels:
             eventing: "true"
         # throughput - MUST fire
         - alert: OpenShiftServerlessEventConsumerThroughput
+          # the cumulative network bytes transmitted by the EKB dispatcher pods over a 5m window must be greater than 50MB
           expr: "( sum(irate(container_network_transmit_bytes_total{job='kubelet', namespace='knative-eventing'}[5m]) * on (namespace,pod) group_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace='knative-eventing', workload=~'kafka-broker-dispatcher'}) > 50000000 )"
           labels:
             eventing: "true"

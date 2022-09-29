@@ -58,6 +58,32 @@ steadyState/003  p10-r3-ord-b20-t10-32kb-11  30.00 req/s        30  6.51 ms  5.0
 ...
 ```
 
+## Verifying reliability
+
+We essentially have 2 types of checks:
+
+First type is the checks Hyperfoil itself does. These are the most fundamental checks around the response codes and request durations.
+The `hf.yaml` files in the repository have these defined:
+```yaml
+sla:
+  - meanResponseTime: 70s
+  - limits:
+      "0.999": 90s
+```
+
+Second type is the checks we implemented custom.
+We set up Hyperfoil to set a `ce-benchmarktimestamp` for the CloudEvent it is sending to the broker. The event is received by
+a [Sacura](https://github.com/pierDipi/sacura) through a trigger, and Sacura will compute the end-to-end latency for the event.
+
+The latency is then sent to a Prometheus instance, where we can query it and check if it is within the expected range.
+
+The actual checking for if we satisfy the latency requirements is done by alerts. There are more alerts for verifying
+dispatcher/ingress throughput and pod stability (no crashes).
+
+TODO: We don't fail the CI job when second type of checks mentioned above fail. We need solid mechanism that fails the CI job
+      when there is an alert fired.
+
+
 ## Generating Kafka Broker test cases
 
 ```shell
