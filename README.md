@@ -75,7 +75,7 @@ Second type is the checks we implemented custom.
 We set up Hyperfoil to set a `ce-benchmarktimestamp` for the CloudEvent it is sending to the broker. The event is received by
 a [Sacura](https://github.com/pierDipi/sacura) through a trigger, and Sacura will compute the end-to-end latency for the event.
 
-The latency is then sent to a Prometheus instance, where we can query it and check if it is within the expected range.
+The latency is then scraped by a Prometheus instance, where we can query it and check if it is within the expected range.
 
 The actual checking for if we satisfy the latency requirements is done by alerts. There are more alerts for verifying
 dispatcher/ingress throughput and pod stability (no crashes).
