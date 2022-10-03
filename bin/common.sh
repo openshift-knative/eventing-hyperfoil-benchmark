@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 manifests_dir="installation/manifests/product"
 default_manifests="${manifests_dir}/000-subscription-serverless.yaml,${manifests_dir}/000-subscription-hyperfoil.yaml,${manifests_dir}/000-subscription-amq-streams.yaml,${manifests_dir}/100-kafka.yaml,${manifests_dir}/100-hyperfoil.yaml,${manifests_dir}/100-knative-eventing.yaml,${manifests_dir}/100-knative-kafka.yaml"
 
@@ -49,7 +51,7 @@ function delete_namespaces {
 
 function apply_manifests() {
   oc apply -f tests/custom-pidslimit.yaml || return $?
-  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit
+  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit --overwrite
   oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
 
   scale_machineset "${NUM_WORKER_NODES}" || return $?

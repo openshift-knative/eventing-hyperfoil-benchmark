@@ -7,6 +7,7 @@ spec:
   groups:
     - name: OpenShiftServerlessAdmin
       rules:
+        # no pods that are under stress can crash
         - alert: OpenShiftServerlessAdminKafkaBrokerReceiverRestarts
           expr: "( kube_pod_container_status_restarts_total{container='kafka-broker-receiver', namespace='knative-eventing'} > 0 )"
           labels:
