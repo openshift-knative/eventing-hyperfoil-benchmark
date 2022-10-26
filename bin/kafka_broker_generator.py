@@ -5,6 +5,7 @@ import os
 parser = argparse.ArgumentParser(description='Generate a test case')
 parser.add_argument('--num-brokers', type=int, dest='num_brokers', help='Number of brokers')
 parser.add_argument('--num-triggers', type=int, dest='num_triggers', help='Number of triggers for each broker')
+parser.add_argument('--num-partitions', type=int, dest='num_partitions', default=10, help='Number of partitions for Broker\'s topic')
 parser.add_argument('--resources-output-dir', type=str, dest='resources_output_dir',
                     help='Output directory for resources')
 parser.add_argument('--hf-output-dir', type=str, dest='hf_output_dir',
@@ -12,6 +13,14 @@ parser.add_argument('--hf-output-dir', type=str, dest='hf_output_dir',
 parser.add_argument('--delivery-order', type=str, dest='delivery_order', help='Delivery order', default='ordered')
 parser.add_argument('--name-prefix', type=str, dest='name_prefix', help='Prefix for resource names')
 parser.add_argument('--payload-file', type=str, dest='payload_file', help='File path with the payload content')
+parser.add_argument('--initial-users-per-sec', type=int, default=10, dest='initial_users_per_sec',
+                    help='Initial users per second')
+parser.add_argument('--increment-users-per-sec', type=int, default=10, dest='increment_users_per_sec',
+                    help='Increment users per second')
+parser.add_argument('--sla-mean-response-time-sec', type=int, default=70, dest='sla_mean_response_time_sec',
+                    help='Mean response time in seconds')
+parser.add_argument('--sla-p999-response-time-sec', type=int, default=90, dest='sla_p999_response_time_sec',
+                    help='P999 response time in seconds')
 args = parser.parse_args()
 
 triggers = []
@@ -32,7 +41,7 @@ kind: ConfigMap
 metadata:
   name: {broker_name}-config
 data:
-  default.topic.partitions: "10"
+  default.topic.partitions: "{args.num_partitions}"
   default.topic.replication.factor: "3"
   bootstrap.servers: my-cluster-kafka-bootstrap.kafka:9092
 ---
@@ -222,9 +231,9 @@ for broker_name in brokers:
               ce-type: datapoint.hyperfoilbench
               content-type: application/json
             sla:
-              - meanResponseTime: 70s
+              - meanResponseTime: {args.sla_mean_response_time_sec}s
               - limits:
-                  "0.999": 90s
+                  "0.999": {args.sla_p999_response_time_sec}s
 
 """
 
@@ -245,8 +254,8 @@ http:
   sharedConnections: 21000
 staircase:
   initialRampUpDuration: 60s
-  initialUsersPerSec: 10
-  incrementUsersPerSec: 10
+  initialUsersPerSec: {args.initial_users_per_sec}
+  incrementUsersPerSec: {args.increment_users_per_sec}
   steadyStateDuration: 300s
   maxIterations: 5
   maxSessions: 20000

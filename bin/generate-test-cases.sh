@@ -61,3 +61,17 @@ rm -rf tests/broker/kafka
   --name-prefix p10-r3-unord-b10-t10-64kb \
   --payload-file payloads/payload.68KB.txt \
   --delivery-order unordered
+
+./bin/kafka_broker_generator.py \
+  --num-brokers 1 \
+  --num-triggers 1 \
+  --num-partitions 1 \
+  --resources-output-dir tests/broker/kafka/p1-r3-unord-b1-t1-64kb/resources \
+  --hf-output-dir tests/broker/kafka/p1-r3-unord-b1-t1-64kb \
+  --name-prefix p10-r3-unord-b1-t1-64kb \
+  --payload-file payloads/payload.68KB.txt \
+  --delivery-order unordered \
+  --initial-users-per-sec 100 \
+  --increment-users-per-sec 100 \
+  --sla-mean-response-time-sec 1 \
+  --sla-p999-response-time-sec 2
