@@ -15,6 +15,8 @@ spec:
         app: kafka-producer-perf-test
     spec:
       restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: kafka-producer-perf-test
           image: quay.io/strimzi/kafka:0.31.1-kafka-3.2.3
@@ -36,6 +38,11 @@ spec:
             - mountPath: /etc/config-kafka-producer-perf-test
               name: config-kafka-producer-perf-test
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
       volumes:
         - name: config-kafka-producer-perf-test
           secret:
