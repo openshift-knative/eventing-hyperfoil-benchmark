@@ -36,7 +36,8 @@ EOF
 }
 
 function delete_test_namespace {
-  if [ -z "${TEST_CASE_NAMESPACE}" ]; then
+  if [ -n "${TEST_CASE_NAMESPACE}" ]; then
+    echo "Deleting test namespace ${TEST_CASE_NAMESPACE}"
     oc delete ns "${TEST_CASE_NAMESPACE}" --ignore-not-found --timeout=10m || return $?
   fi
 }
@@ -287,4 +288,21 @@ function scale_deployment() {
   oc -n "${ns}" scale deployment "${deployment}" --replicas="${replicas}" || fail_test "Failed to scale ${deployment} to ${replicas}" || return $?
   sleep 10
   oc -n "${ns}" wait deployment "${deployment}" --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m || return $?
+}
+
+function run_kafka_core_test() {
+  delete_test_namespace || return $?
+  create_namespaces || return $?
+
+  echo_input_variables
+
+  prop_temp_file="/tmp/producer.properties"
+
+  envsubst <"${TEST_CASE}/producer.properties" > "${prop_temp_file}" || return $?
+  oc create secret generic -n "${TEST_CASE_NAMESPACE}" "config-kafka-producer-perf-test" --from-file=producer.properties="${prop_temp_file}" || return $?
+
+  envsubst <"${TEST_CASE}/200-kafka-producer-perf-test.yaml" | oc create -n "${TEST_CASE_NAMESPACE}" -f - || return $?
+
+  oc wait --for=condition=complete -n "${TEST_CASE_NAMESPACE}" job -l=app=kafka-producer-perf-test --timeout=10m || return $?
+  oc logs -n "${TEST_CASE_NAMESPACE}" -l=app=kafka-producer-perf-test --tail=10000 || true
 }

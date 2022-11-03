@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: kafka-producer-perf-test
+  labels:
+    app: kafka-producer-perf-test
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      name: kafka-producer-perf-test
+      labels:
+        app: kafka-producer-perf-test
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: kafka-producer-perf-test
+          image: quay.io/strimzi/kafka:0.31.1-kafka-3.2.3
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/opt/kafka/bin/kafka-producer-perf-test.sh"
+            - "--topic"
+            - "${TOPIC}"
+            - "--num-records"
+            - "10000"
+            - "--throughput"
+            - "${THROUGHPUT}" # records/sec
+            - "--producer.config"
+            - "/etc/config-kafka-producer-perf-test/producer.properties"
+            - "--print-metrics"
+            - "--record-size"
+            - "${RECORD_SIZE}"
+          volumeMounts:
+            - mountPath: /etc/config-kafka-producer-perf-test
+              name: config-kafka-producer-perf-test
+              readOnly: true
+      volumes:
+        - name: config-kafka-producer-perf-test
+          secret:
+            secretName: config-kafka-producer-perf-test
