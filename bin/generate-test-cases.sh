@@ -68,7 +68,7 @@ rm -rf tests/broker/kafka
   --num-partitions 1 \
   --resources-output-dir tests/broker/kafka/p1-r3-unord-b1-t1-64kb/resources \
   --hf-output-dir tests/broker/kafka/p1-r3-unord-b1-t1-64kb \
-  --name-prefix p10-r3-unord-b1-t1-64kb \
+  --name-prefix p1-r3-unord-b1-t1-64kb \
   --payload-file payloads/payload.68KB.txt \
   --delivery-order unordered \
   --initial-users-per-sec 100 \
