@@ -8,12 +8,14 @@ data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
   bootstrap.servers: my-cluster-kafka-bootstrap.kafka:9092
+  
 ---
 apiVersion: eventing.knative.dev/v1
 kind: Broker
 metadata:
   annotations:
     eventing.knative.dev/broker.class: Kafka
+    
   name: p10-r3-ord-b100-t5-5b-51
 spec:
   # Configuration specific to this broker.

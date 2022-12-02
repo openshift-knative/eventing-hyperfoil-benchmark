@@ -22,7 +22,7 @@ staircase:
   maxSessions: 20000
   rampUpDuration: 120s
   scenario:
-  
+
     - p10-r3-unord-b10-t10-64kb-0:
         - timestamp:
             toVar: eventTimestamp

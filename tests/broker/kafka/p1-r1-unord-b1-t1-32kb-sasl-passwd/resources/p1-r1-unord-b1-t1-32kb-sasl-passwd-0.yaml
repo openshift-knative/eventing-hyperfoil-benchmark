@@ -15,6 +15,7 @@ kind: Broker
 metadata:
   annotations:
     eventing.knative.dev/broker.class: Kafka
+    
   name: p1-r1-unord-b1-t1-32kb-sasl-passwd-0
 spec:
   # Configuration specific to this broker.
