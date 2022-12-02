@@ -170,6 +170,135 @@ function run() {
   "$(dirname "${BASH_SOURCE[0]}")"/run_benchmark.py || return $?
 }
 
+function create_kafka_secrets() {
+  echo "Applying Strimzi TLS Admin user"
+  cat <<-EOF | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-tls-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for consuming from a topic.
+      - resource:
+          type: topic
+          name: "*"
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Read
+        host: "*"
+      # Example ACL rules for producing to a topic.
+      - resource:
+          type: topic
+          name: "*"
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Create
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      # Required ACL rule to be able to delete topics
+      - resource:
+          type: topic
+          name: "*"
+        operation: Delete
+        host: "*"
+EOF
+
+  echo "Applying Strimzi SASL Admin User"
+  cat <<-EOF | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-sasl-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for consuming from knative-messaging-kafka using consumer group my-group
+      - resource:
+          type: topic
+          name: "*"
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Read
+        host: "*"
+      # Example ACL rules for producing to topic knative-messaging-kafka
+      - resource:
+          type: topic
+          name: "*"
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Create
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      # Required ACL rule to be able to delete topics
+      - resource:
+          type: topic
+          name: "*"
+        operation: Delete
+        host: "*"
+EOF
+
+  echo "Waiting for Strimzi admin users to become ready"
+  oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
+
+  echo "Creating a Secret, containing TLS from Strimzi"
+  STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
+  TLSUSER_CRT=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.crt"}}' | base64 --decode )
+  TLSUSER_KEY=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.key"}}' | base64 --decode )
+  SASL_PASSWD=$(oc -n kafka get secret my-sasl-user --template='{{index .data "password"}}' | base64 --decode )
+
+  oc create secret --namespace "${TEST_CASE_NAMESPACE}" generic strimzi-sasl-plain-secret \
+      --from-literal=password="$SASL_PASSWD" \
+      --from-literal=user="my-sasl-user" \
+      --from-literal=protocol="SASL_PLAINTEXT" \
+      --from-literal=sasl.mechanism="SCRAM-SHA-512" \
+      --from-literal=saslType="SCRAM-SHA-512" \
+      --dry-run=client -o yaml | oc apply -n "${TEST_CASE_NAMESPACE}" -f -
+}
+
 function scale_machineset() {
   echo "Reconcile workers to at least ${1} nodes"
   additional_replicas=$(oc get machineset -n openshift-machine-api | awk '{print $2}' | tail -n +2 | awk -v workers="$1" '{sum+=$1} END {print workers-sum}')

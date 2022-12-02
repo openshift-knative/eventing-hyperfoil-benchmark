@@ -37,6 +37,7 @@ echo_input_variables || exit 1
 
 # Retry apply manifests twice.
 apply_manifests || apply_manifests || exit 1
+create_kafka_secrets || create_kafka_secrets || exit 1
 
 run || exit 1
 
