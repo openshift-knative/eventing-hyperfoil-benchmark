@@ -28,3 +28,7 @@ export TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb
 kubectl delete ns "${TEST_CASE_NAMESPACE}" --ignore-not-found || exit 1
 export TEST_CASE=tests/broker/kafka/p10-r3-unord-b10-t10-64kb
 ./bin/run_test.sh || exit 1
+
+kubectl delete ns "${TEST_CASE_NAMESPACE}" --ignore-not-found || exit 1
+export TEST_CASE=tests/broker/kafka/p1-r1-unord-b1-t1-32kb-sasl-passwd
+./bin/run_test.sh || exit 1
