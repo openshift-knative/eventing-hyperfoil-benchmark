@@ -78,3 +78,14 @@ rm -rf tests/broker/kafka
   --sla-p999-response-time-sec 2 \
   --secret-name=strimzi-sasl-plain-secret \
   --bootstrap.servers=my-cluster-kafka-bootstrap.kafka:9095
+
+./bin/kafka_broker_generator.py \
+  --num-brokers 10 \
+  --num-triggers 10 \
+  --resources-output-dir tests/broker/kafka/p10-r3-unord-b10-t10-64kb-sasl-passwd/resources \
+  --hf-output-dir tests/broker/kafka/p10-r3-unord-b10-t10-64kb-sasl-passwd \
+  --name-prefix p10-r3-unord-b10-t10-64kb-sasl-passwd \
+  --payload-file payloads/payload.68KB.txt \
+  --delivery-order unordered \
+  --secret-name=strimzi-sasl-plain-secret \
+  --bootstrap.servers=my-cluster-kafka-bootstrap.kafka:9095
