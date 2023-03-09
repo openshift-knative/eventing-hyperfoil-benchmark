@@ -35,6 +35,7 @@ NAMESPACE   NAME                VERSION   ROUTE                                 
 hyperfoil   hyperfoil-cluster   latest    hyperfoil-cluster-hyperfoil.foo.openshift.com         Ready
 ```
 
+TMP!
 Hyperfoil provides a bunch of useful commands, but here are the most useful ones:
 
 ```shell
