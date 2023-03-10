@@ -195,7 +195,8 @@ function scale_machineset() {
 
 function wait_for_machine_set_to_be_ready() {
   replicas=$(oc get machineset -n openshift-machine-api "${1}" -o=jsonpath='{.spec.replicas}')
-  oc wait machineset "${machineset}" -n openshift-machine-api --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
+  # might be affected by https://github.com/kubernetes/kubernetes/pull/109525
+  oc wait machineset "${1}" -n openshift-machine-api --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
 }
 
 function wait_for_resources_to_be_ready() {
