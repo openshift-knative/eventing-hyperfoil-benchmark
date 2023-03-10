@@ -28,7 +28,7 @@ TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_test.sh
 # Run quick smoke test if requirements are already installed
 export CONFIGURE_MACHINE=false
 export SCALE_UP_DATAPLANE=false
-export SCALE_UP_TEST_DEPLOYMENT=false
+export RECEIVER_DEPLOYMENT_REPLICAS=1
 export SKIP_DELETE_RESOURCES=true
 TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_test.sh
 ```

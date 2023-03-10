@@ -10,7 +10,7 @@ export KNATIVE_MANIFESTS=${KNATIVE_MANIFESTS-$default_manifests}
 export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
 export CONFIGURE_MACHINE=${CONFIGURE_MACHINE:-true}
 export SCALE_UP_DATAPLANE=${SCALE_UP_DATAPLANE:-true}
-export SCALE_UP_TEST_DEPLOYMENT=${SCALE_UP_TEST_DEPLOYMENT:-true}
+export RECEIVER_DEPLOYMENT_REPLICAS=${RECEIVER_DEPLOYMENT_REPLICAS:-10}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
@@ -147,9 +147,7 @@ function run() {
   #     modified; please apply your changes to the latest version and try again
   apply_test_resources || apply_test_resources || return $?
 
-  if ${SCALE_UP_TEST_DEPLOYMENT}; then
-    scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" 10 "${TEST_CASE_NAMESPACE}"
-  fi
+  scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" ${RECEIVER_DEPLOYMENT_REPLICAS} "${TEST_CASE_NAMESPACE}"
 
   # Wait for all possible resources to be ready
   wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
