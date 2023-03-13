@@ -110,7 +110,8 @@ Existing test cases are generated using `./bin/generate-test-cases.sh` script. Y
   --hf-output-dir tests/broker/kafka/p10-r3-ord-b100-t10 \
   --name-prefix broker-ord \
   --payload-file payloads/payload.68KB.txt \
-  --delivery-order ordered
+  --delivery-order ordered \
+  ...
 ```
 
 ## Notes:
@@ -128,3 +129,96 @@ Existing test cases are generated using `./bin/generate-test-cases.sh` script. Y
 - Similarly, some deployments might be scaled up to more replicas than the release manifests to be able to pass the requirements defined in Hyperfoil scenarios.
 
 - Alerts in `installation/alerts` are alerts with Prometheus metrics.
+
+## Running ad-hoc tests with RHOSAK
+
+Set up some variables:
+```shell
+# example: hyperfoil-cluster-hyperfoil.apps.aliok-c027.serverless.foo.bar.com
+HYPERFOIL_URL="HYPERFOIL_URL"
+
+# make sure you create RHOSAK service account and give correct permissions to the user account:
+# - consume from topic
+# - produce to topic
+# - create a topic
+# - delete a topic
+RHOSAK_USERNAME="YOUR_RHOSAK_SERVICE_ACCOUNT_CLIENT_ID"
+RHOSAK_PASSWORD="YOUR_RHOSAK_SERVICE_ACCOUNT_CLIENT_SECRET"
+
+# example: abcdef.foo.bar.kafka.rhcloud.com:443
+RHOSAK_URL="YOUR_RHOSAK_BOOTSTRAP_SERVER_URL"
+```
+
+```shell
+
+# create Hyperfoil with correct url:
+cat <<EOF | oc apply -f -
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: hyperfoil
+---
+apiVersion: hyperfoil.io/v1alpha2
+kind: Hyperfoil
+metadata:
+  name: hyperfoil
+  namespace: hyperfoil
+spec:
+  agentDeployTimeout: 120000
+  route:
+    host: ${HYPERFOIL_URL}
+  version: latest
+  additionalArgs:
+  - "-Djgroups.thread_pool.max_threads=500"
+  image: 'quay.io/hyperfoil/hyperfoil:0.20-SNAPSHOT'
+EOF
+
+# create test namespace and the secret to use in Knative KafkaBroker
+cat <<EOF | oc apply -f -
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: perf-test
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: prod-rhosak
+  namespace: perf-test
+stringData:
+  password: ${RHOSAK_PASSWORD}
+  protocol: SASL_SSL
+  sasl.mechanism: PLAIN
+  user: ${RHOSAK_USERNAME}
+type: Opaque
+EOF
+
+# Create test cases:
+./bin/kafka_broker_generator.py \
+  --num-brokers 1 \
+  --num-triggers 1 \
+  --num-partitions 1 \
+  --replication-factor 3 \
+  --resources-output-dir tests/broker/kafka/ad-hoc/resources \
+  --hf-output-dir tests/broker/kafka/ad-hoc \
+  --name-prefix ad-hoc \
+  --payload-file payloads/payload.10KB.txt \
+  --delivery-order unordered \
+  --initial-users-per-sec 100 \
+  --increment-users-per-sec 100 \
+  --sla-mean-response-time-sec 1000 \
+  --sla-p999-response-time-sec 2000 \
+  --secret-name=prod-rhosak \
+  --bootstrap.servers=${RHOSAK_URL} \
+  --initial-ramp-up-duration=10 \
+  --ramp-up-duration=10 \
+  --steady_state-duration=60 \
+  --max-iterations=1
+
+# Run tests
+#export CONFIGURE_MACHINE=false
+#export SCALE_UP_DATAPLANE=false
+#export RECEIVER_DEPLOYMENT_REPLICAS=1
+#export SKIP_DELETE_RESOURCES=true
+TEST_CASE=tests/broker/kafka/ad-hoc ./bin/run_test.sh
+```
