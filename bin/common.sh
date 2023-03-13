@@ -53,6 +53,8 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
+  echo "apply_manifests"
+
   if ${CONFIGURE_MACHINE}; then
     oc apply -f tests/custom-pidslimit.yaml || return $?
     oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit --overwrite
@@ -62,18 +64,22 @@ function apply_manifests() {
     oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
   fi
 
+  echo "apply_manifests - gonna create namespaces"
   create_namespaces || return $?
+  echo "apply_manifests - created namespaces"
 
   mkdir -p "${ARTIFACT_DIR}/${TEST_CASE}"
 
   # Extract manifests from the comma-separated list of manifests
   IFS=\, read -ra manifests <<<"${KNATIVE_MANIFESTS}"
 
+  echo "apply_manifests - gonna apply manifests"
   for x in "${manifests[@]}"; do
     echo "Applying ${x}"
     envsubst <"${x}" | oc apply -f - || return $?
     wait_for_operators_to_be_running || return $?
   done
+  echo "apply_manifests - applied manifests"
 
   wait_until_pods_running "kafka" || return $?
   wait_until_pods_running "knative-eventing" || return $?
