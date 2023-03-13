@@ -8,6 +8,9 @@ default_hyperfoil_server_url="hyperfoil-cluster-hyperfoil.${cluster_domain}"
 export HYPERFOIL_SERVER_URL=${HYPERFOIL_SERVER_URL:-${default_hyperfoil_server_url}}
 export KNATIVE_MANIFESTS=${KNATIVE_MANIFESTS-$default_manifests}
 export SKIP_DELETE_RESOURCES=${SKIP_DELETE_RESOURCES:-false}
+export CONFIGURE_MACHINE=${CONFIGURE_MACHINE:-true}
+export SCALE_UP_DATAPLANE=${SCALE_UP_DATAPLANE:-true}
+export RECEIVER_DEPLOYMENT_REPLICAS=${RECEIVER_DEPLOYMENT_REPLICAS:-10}
 export SKIP_CREATE_TEST_RESOURCES=${SKIP_CREATE_TEST_RESOURCES:-false}
 export TEST_CASE_NAMESPACE=${TEST_CASE_NAMESPACE-"perf-test"}
 export WORKER_ONE=${WORKER_ONE:-node-role.kubernetes.io/worker=""}
@@ -50,13 +53,14 @@ function delete_namespaces {
 }
 
 function apply_manifests() {
-  oc apply -f tests/custom-pidslimit.yaml || return $?
-  oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit --overwrite
-  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+  if ${CONFIGURE_MACHINE}; then
+    oc apply -f tests/custom-pidslimit.yaml || return $?
+    oc label machineconfigpools.machineconfiguration.openshift.io worker custom-crio=custom-pidslimit --overwrite
+    oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
 
-  scale_machineset "${NUM_WORKER_NODES}" || return $?
-
-  oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+    scale_machineset "${NUM_WORKER_NODES}" || return $?
+    oc wait machineconfigpools.machineconfiguration.openshift.io worker --timeout=30m --for=condition=Updated=True
+  fi
 
   create_namespaces || return $?
 
@@ -71,7 +75,9 @@ function apply_manifests() {
     wait_for_operators_to_be_running || return $?
   done
 
-  wait_for_workloads_to_be_running || exit 1
+  wait_until_pods_running "kafka" || return $?
+  wait_until_pods_running "knative-eventing" || return $?
+  wait_until_pods_running "hyperfoil" || return $?
 }
 
 function delete_manifests() {
@@ -116,8 +122,10 @@ EOF
   oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
   oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
 
-  scale_deployment "kafka-broker-dispatcher" 3 || return $?
-  scale_deployment "kafka-broker-receiver" 2 || return $?
+  if ${SCALE_UP_DATAPLANE}; then
+    scale_deployment "kafka-broker-dispatcher" 3 || return $?
+    scale_deployment "kafka-broker-receiver" 2 || return $?
+  fi
 
   if ${SKIP_CREATE_TEST_RESOURCES}; then
     return 0
@@ -125,7 +133,7 @@ EOF
 
   oc apply -n "${TEST_CASE_NAMESPACE}" -f "${TEST_CASE}/resources" || return $?
 
-  wait_for_workloads_to_be_running || return $?
+  wait_until_pods_running "knative-eventing" || return $?
 }
 
 function run() {
@@ -139,7 +147,7 @@ function run() {
   #     modified; please apply your changes to the latest version and try again
   apply_test_resources || apply_test_resources || return $?
 
-  scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" 10 "${TEST_CASE_NAMESPACE}"
+  scale_deployment "$(oc get deploy -n perf-test | tail -n 1 | awk '{print $1}')" ${RECEIVER_DEPLOYMENT_REPLICAS} "${TEST_CASE_NAMESPACE}"
 
   # Wait for all possible resources to be ready
   wait_for_resources_to_be_ready "brokers.eventing.knative.dev" || return $?
@@ -149,7 +157,7 @@ function run() {
   wait_for_resources_to_be_ready "kafkachannels.messaging.knative.dev" || return $?
   wait_for_resources_to_be_ready "kafkasources.sources.knative.dev" || return $?
 
-  wait_for_workloads_to_be_running || return $?
+  wait_until_pods_running "knative-eventing" || return $?
   wait_until_pods_running "${TEST_CASE_NAMESPACE}" || return $?
 
   # Inject additional env variables for test case specific configurations.
@@ -185,7 +193,8 @@ function scale_machineset() {
 
 function wait_for_machine_set_to_be_ready() {
   replicas=$(oc get machineset -n openshift-machine-api "${1}" -o=jsonpath='{.spec.replicas}')
-  oc wait machineset "${machineset}" -n openshift-machine-api --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
+  # might be affected by https://github.com/kubernetes/kubernetes/pull/109525
+  oc wait machineset "${1}" -n openshift-machine-api --for=jsonpath='{.status.readyReplicas}'="${replicas}" --timeout=30m
 }
 
 function wait_for_resources_to_be_ready() {
@@ -208,13 +217,6 @@ function wait_for_operators_to_be_running() {
     awk '{print $1}' | # Extract resource name
     tail -n +2 |       # skip header
     xargs -I{} oc wait csv -n openshift-operators {} --timeout 300s --for=jsonpath='{.status.phase}'=Succeeded || return $?
-}
-
-function wait_for_workloads_to_be_running() {
-  echo "Waiting for pods to be running"
-  wait_until_pods_running "kafka" || return $?
-  wait_until_pods_running "knative-eventing" || return $?
-  wait_until_pods_running "hyperfoil" || return $?
 }
 
 # Copied from https://github.com/knative/hack/blob/0456e8bf65476e200785565da7c19382e271cae2/library.sh#L215-L265

@@ -15,8 +15,22 @@ make test-kafka-broker-upstream-nightly
 # artifacts in installation/manifests/product-nightly
 make test-kafka-broker-midstream-nightly
 
+# Deploy requirements (Kafka, Serverless, Hyperfoil) from products and run a specific test
+TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_midstream_nightly.sh
+
 # Run a specific test using an existing Serverless or Knative installation
-TEST_CASE=tests/broker/kafka/p10-r3-ordered ./bin/run_test.sh
+TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_test.sh
+
+# Same as above, but skip deleting resources after the test for debugging purposes
+export SKIP_DELETE_RESOURCES=true
+TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_test.sh
+
+# Run quick smoke test if requirements are already installed
+export CONFIGURE_MACHINE=false
+export SCALE_UP_DATAPLANE=false
+export RECEIVER_DEPLOYMENT_REPLICAS=1
+export SKIP_DELETE_RESOURCES=true
+TEST_CASE=tests/broker/kafka/p10-r3-ord-b10-t10-64kb ./bin/run_test.sh
 ```
 
 ## Interpreting test results
@@ -85,6 +99,8 @@ TODO: We don't fail the CI job when second type of checks mentioned above fail. 
 
 
 ## Generating Kafka Broker test cases
+
+Existing test cases are generated using `./bin/generate-test-cases.sh` script. You might find examples there.
 
 ```shell
 ./bin/kafka_broker_generator.py \
