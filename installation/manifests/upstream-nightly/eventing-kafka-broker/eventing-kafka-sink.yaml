@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -111,10 +111,10 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
 rules:
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - secrets
     verbs:
@@ -142,7 +142,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -163,7 +163,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -194,7 +194,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
+    app.kubernetes.io/component: kafka-sink-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels:
@@ -204,7 +206,9 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+        app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
+        app.kubernetes.io/component: kafka-sink-receiver
+        app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -228,7 +232,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20220907-a895dd53
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver:v20230313-f8737a4b
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -289,7 +293,10 @@ spec:
               value: "8"
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:+CrashOnOutOfMemoryError"
-          # TODO set resources (limits and requests)
+          resources:
+            requests:
+              cpu: 200m
+              memory: 450Mi
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -314,8 +321,12 @@ spec:
           terminationMessagePath: /dev/temination-log
           securityContext:
             allowPrivilegeEscalation: false
-            privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
       volumes:
         - name: kafka-sink-sinks
           configMap:
@@ -340,7 +351,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "a895dd53d3c4448ec0ec21b18bf330bd13b89210"
+    app.kubernetes.io/version: "f8737a4bac968d89290f63d26f7595a280e8d730"
+    app.kubernetes.io/component: kafka-sink-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     app: kafka-sink-receiver
