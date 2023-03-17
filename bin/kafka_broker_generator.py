@@ -3,9 +3,12 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser(description='Generate a test case')
+parser.add_argument('--broker-class', type=str, dest='broker_class', default='Kafka', help='Broker class',
+                    choices=['Kafka', 'KafkaNamespaced'])
 parser.add_argument('--num-brokers', type=int, dest='num_brokers', help='Number of brokers')
 parser.add_argument('--num-triggers', type=int, dest='num_triggers', help='Number of triggers for each broker')
-parser.add_argument('--num-partitions', type=int, dest='num_partitions', default=10, help='Number of partitions for Broker\'s topic')
+parser.add_argument('--num-partitions', type=int, dest='num_partitions', default=10,
+                    help='Number of partitions for Broker\'s topic')
 parser.add_argument('--resources-output-dir', type=str, dest='resources_output_dir',
                     help='Output directory for resources')
 parser.add_argument('--hf-output-dir', type=str, dest='hf_output_dir',
@@ -65,7 +68,7 @@ apiVersion: eventing.knative.dev/v1
 kind: Broker
 metadata:
   annotations:
-    eventing.knative.dev/broker.class: Kafka
+    eventing.knative.dev/broker.class: {args.broker_class}
   name: {broker_name}
 spec:
   # Configuration specific to this broker.
