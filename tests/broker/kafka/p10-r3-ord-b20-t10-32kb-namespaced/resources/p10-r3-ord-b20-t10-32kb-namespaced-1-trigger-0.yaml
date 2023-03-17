@@ -1,0 +1,116 @@
+
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: p10-r3-ord-b20-t10-32kb-namespaced-1-trigger-0
+  annotations:
+    kafka.eventing.knative.dev/delivery.order: ordered
+spec:
+  broker: p10-r3-ord-b20-t10-32kb-namespaced-1
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: p10-r3-ord-b20-t10-32kb-namespaced-svc
+    uri: "/p10-r3-ord-b20-t10-32kb-namespaced-1-trigger-0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p10-r3-ord-b20-t10-32kb-namespaced-svc
+  labels:
+    app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: receiver
+      name: http
+    - port: 9090
+      protocol: TCP
+      targetPort: http-metrics
+      name: http-metrics
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-sacura
+data:
+  sacura.yaml: |
+    sender:
+      disabled: true
+    receiver:
+      port: 8080
+      timeout: 5m
+      maxDuplicatesPercentage: 1
+    duration: 10m
+    timeout: 1m
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: p10-r3-ord-b20-t10-32kb-namespaced-svc
+  labels:
+    app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+spec:
+  endpoints:
+    - path: /metrics
+      port: http-metrics
+  selector:
+    matchLabels:
+      app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p10-r3-ord-b20-t10-32kb-namespaced-svc
+  labels:
+    app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+spec:
+  selector:
+    matchLabels:
+      app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+  template:
+    metadata:
+      labels:
+        app: p10-r3-ord-b20-t10-32kb-namespaced-svc
+    spec:
+      containers:
+        - name: receiver
+          image: ghcr.io/pierdipi/sacura/sacura-7befbbbc92911c6727467cfbf23af88f
+          args:
+            - "--config"
+            - "/etc/sacura/sacura.yaml"
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1"
+          volumeMounts:
+          - mountPath: /etc/sacura
+            name: config
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: receiver
+            - containerPort: 9090
+              protocol: TCP
+              name: http-metrics
+          env:
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service=p10-r3-ord-b20-t10-32kb-namespaced-svc"
+            - name: OTEL_SERVICE_NAME
+              value: "sacura"
+      volumes:
+      - name: config
+        configMap:
+          name: config-sacura
+
