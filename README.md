@@ -1,5 +1,7 @@
 # Eventing performance tests
 
+TEST
+
 ## Prerequisites:
 - Access to an OCP cluster
 - `oc` CLI tool installed and logged in to the cluster (version: 4.10+)
