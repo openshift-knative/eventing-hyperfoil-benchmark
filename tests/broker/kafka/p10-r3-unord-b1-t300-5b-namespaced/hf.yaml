@@ -1,0 +1,48 @@
+
+name: eventing-staircase
+agents:
+  agent-one:
+    node: ${WORKER_ONE}
+    stop: true
+  agent-two:
+    node: ${WORKER_ONE}
+    stop: true
+  agent-three:
+    node: ${WORKER_ONE}
+    stop: true
+http:
+  host: ${HTTP_HOST}
+  sharedConnections: 21000
+staircase:
+  initialRampUpDuration: 60s
+  initialUsersPerSec: 10
+  incrementUsersPerSec: 10
+  steadyStateDuration: 300s
+  maxIterations: 5
+  maxSessions: 20000
+  rampUpDuration: 120s
+  scenario:
+
+    - p10-r3-unord-b1-t300-5b-namespaced-0:
+        - timestamp:
+            toVar: eventTimestamp
+        - httpRequest:
+            POST: /${TEST_CASE_NAMESPACE}/p10-r3-unord-b1-t300-5b-namespaced-0
+            body: "Huo="
+            headers:
+              ce-benchmarktimestamp: "${eventTimestamp}"
+              ce-id: abc
+              ce-metric: e2elatency
+              ce-phase: "${hyperfoil.phase.id}"
+              ce-phasestart: "${hyperfoil.phase.start.time.as.string}"
+              ce-runid: "${hyperfoil.run.id}"
+              ce-source: "http://hyperfoil-bench.com"
+              ce-specversion: "1.0"
+              ce-type: datapoint.hyperfoilbench
+              content-type: application/json
+            sla:
+              - meanResponseTime: 70s
+              - limits:
+                  "0.999": 90s
+
+
