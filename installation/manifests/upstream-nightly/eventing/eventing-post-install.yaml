@@ -17,9 +17,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    app.kubernetes.io/version: "20230314-5988c4278"
+    app.kubernetes.io/version: "20230405-500ae1d96"
     app.kubernetes.io/name: knative-eventing
-    eventing.knative.dev/release: "v20230314-5988c4278"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -139,8 +138,7 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v20230314-5988c4278"
-    app.kubernetes.io/version: "20230314-5988c4278"
+    app.kubernetes.io/version: "20230405-500ae1d96"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -148,8 +146,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    eventing.knative.dev/release: "v20230314-5988c4278"
-    app.kubernetes.io/version: "20230314-5988c4278"
+    app.kubernetes.io/version: "20230405-500ae1d96"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -184,8 +181,7 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "20230314-5988c4278"
-    eventing.knative.dev/release: "v20230314-5988c4278"
+    app.kubernetes.io/version: "20230405-500ae1d96"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -195,8 +191,7 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "20230314-5988c4278"
-        eventing.knative.dev/release: "v20230314-5988c4278"
+        app.kubernetes.io/version: "20230405-500ae1d96"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -204,7 +199,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-nightly/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:5927e66f73cdb822ec9e6b71046c573e1c06700b0ad95081ec485cbdd54d7fad
+          image: gcr.io/knative-nightly/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:7427c9daecea9b4def7553d01aac23b2a6f7d643d9d1d1dd1abd79d838eb632f
           args:
             - "apiserversources.sources.knative.dev"
             - "brokers.eventing.knative.dev"
