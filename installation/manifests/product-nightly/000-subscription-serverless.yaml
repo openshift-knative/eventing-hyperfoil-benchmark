@@ -10,7 +10,7 @@ metadata:
   namespace: openshift-marketplace
 spec:
   displayName: Serverless Operator
-  image: registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-index
+  image: registry.ci.openshift.org/knative/main:serverless-index
   publisher: Red Hat
   sourceType: grpc
 ---
