@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # This script install the system using manifests in
 # `installation/manifests/product` by overriding
 # the variable KNATIVE_MANIFESTS (see `run.sh`
