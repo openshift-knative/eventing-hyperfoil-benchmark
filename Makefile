@@ -4,3 +4,6 @@ test-kafka-broker-upstream-nightly:
 
 test-kafka-broker-midstream-nightly:
 	./bin/test-kafka-broker-midstream-nightly.sh || exit 1
+
+generate:
+	./hack/generate.sh
