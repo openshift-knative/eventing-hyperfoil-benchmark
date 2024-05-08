@@ -52,8 +52,6 @@ hyperfoil   hyperfoil-cluster   latest    hyperfoil-cluster-hyperfoil.foo.opensh
 Hyperfoil provides a bunch of useful commands, but here are the most useful ones:
 
 ```shell
-
-```shell
 # Download a HTML report for the test run
 [hyperfoil]$ report 0000
 
