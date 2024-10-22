@@ -119,11 +119,9 @@ EOF
     --from-file=alertmanager.yaml=installation/alerts/alertmanager/alert-manager-config.yaml \
     --dry-run=client -o=yaml | oc -n openshift-monitoring replace secret --filename=-
 
-  oc patch deployment -n knative-eventing kafka-broker-dispatcher --patch-file installation/patches/kafka-broker-dispatcher.yaml
   oc patch deployment -n knative-eventing kafka-broker-receiver --patch-file installation/patches/kafka-broker-receiver.yaml
 
   if ${SCALE_UP_DATAPLANE}; then
-    scale_deployment "kafka-broker-dispatcher" 3 || return $?
     scale_deployment "kafka-broker-receiver" 2 || return $?
   fi
 
