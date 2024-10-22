@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    app.kubernetes.io/version: "20230727-ffa591593"
+    app.kubernetes.io/version: "20241019-6aa49dc1d"
     app.kubernetes.io/name: knative-eventing
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
@@ -110,6 +110,19 @@ rules:
       - "patch"
       - "watch"
   - apiGroups:
+      - "sinks.knative.dev"
+    resources:
+      - "jobsinks"
+      - "jobsinks/finalizers"
+      - "jobsinks/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
       - ""
     resources:
       - "namespaces"
@@ -138,7 +151,7 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "20230727-ffa591593"
+    app.kubernetes.io/version: "20241019-6aa49dc1d"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -146,7 +159,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    app.kubernetes.io/version: "20230727-ffa591593"
+    app.kubernetes.io/version: "20241019-6aa49dc1d"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -181,7 +194,7 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "20230727-ffa591593"
+    app.kubernetes.io/version: "20241019-6aa49dc1d"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -191,7 +204,8 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "20230727-ffa591593"
+        app.kubernetes.io/version: "20241019-6aa49dc1d"
+        sidecar.istio.io/inject: "false"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -199,7 +213,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-nightly/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:b7ac36b4fbf75f053a60f8f7f3d2193616dc13876cbdf3d936c2195d4ffe4d43
+          image: gcr.io/knative-nightly/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:4d3e366b7afb943902d0ca41abc6354fcab4372e5437e924cdfa5e9729fb8b95
           args:
             - "apiserversources.sources.knative.dev"
             - "brokers.eventing.knative.dev"
@@ -213,6 +227,7 @@ spec:
             - "sinkbindings.sources.knative.dev"
             - "subscriptions.messaging.knative.dev"
             - "triggers.eventing.knative.dev"
+            - "jobsinks.sinks.knative.dev"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
