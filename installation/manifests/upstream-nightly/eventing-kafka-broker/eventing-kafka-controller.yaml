@@ -17,7 +17,7 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
@@ -43,7 +43,7 @@ metadata:
   name: kafka-channel-config
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 
@@ -67,7 +67,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -134,6 +134,11 @@ spec:
                         uri:
                           description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                           type: string
+                        CACerts:
+                          type: string
+                        audience:
+                          description: Audience is the OIDC audience for the deadLetterSink.
+                          type: string
                     retry:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
@@ -178,6 +183,11 @@ spec:
                               uri:
                                 description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                                 type: string
+                              CACerts:
+                                type: string
+                              audience:
+                                description: Audience is the OIDC audience for the deadLetterSink.
+                                type: string
                           retry:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
@@ -187,15 +197,37 @@ spec:
                         description: Generation of the origin of the subscriber with uid:UID.
                         type: integer
                         format: int64
+                      name:
+                        description: The name of the subscription
+                        type: string
                       replyUri:
                         description: ReplyURI is the endpoint for the reply
+                        type: string
+                      replyCACerts:
+                        description: replyCACerts is the CA certs to trust for the reply.
+                        type: string
+                      replyAudience:
+                        description: ReplyAudience is the OIDC audience for the replyUri.
                         type: string
                       subscriberUri:
                         description: SubscriberURI is the endpoint for the subscriber
                         type: string
+                      subscriberCACerts:
+                        description: SubscriberCACerts is the CA certs to trust for the subscriber.
+                        type: string
+                      subscriberAudience:
+                        description: SubscriberAudience is the OIDC audience for the subscriberUri.
+                        type: string
                       uid:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
+                      auth:
+                        description: Auth provides the relevant information for OIDC authentication.
+                        type: object
+                        properties:
+                          serviceAccountName:
+                            description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                            type: string
             status:
               description: Status represents the current state of the KafkaChannel. This data may be out of date.
               type: object
@@ -205,12 +237,44 @@ spec:
                   required:
                     - url
                   properties:
+                    name:
+                      type: string
                     url:
                       type: string
+                    CACerts:
+                      type: string
+                    audience:
+                      type: string
+                addresses:
+                  description: Kafka Sink is Addressable. It exposes the endpoints as URIs to get events delivered into the Kafka topic.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                      CACerts:
+                        type: string
+                      audience:
+                        type: string
                 annotations:
                   description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
+                policies:
+                  description: List of applied EventPolicies
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      apiVersion:
+                        description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                        type: string
+                      name:
+                        description: The name of the applied EventPolicy
+                        type: string
                 conditions:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
@@ -257,6 +321,11 @@ spec:
                 deadLetterSinkUri:
                   description: DeadLetterSinkURI is the resolved URI of the dead letter ref if one is specified in the Spec.Delivery.
                   type: string
+                deadLetterSinkCACerts:
+                  type: string
+                deadLetterSinkAudience:
+                  description: OIDC audience of the dead letter sink.
+                  type: string
                 observedGeneration:
                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                   type: integer
@@ -280,6 +349,13 @@ spec:
                       uid:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
+                      auth:
+                        description: Auth provides the relevant information for OIDC authentication.
+                        type: object
+                        properties:
+                          serviceAccountName:
+                            description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                            type: string
       additionalPrinterColumns:
         - name: Ready
           type: string
@@ -336,7 +412,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     knative.dev/crd-install: "true"
   name: consumers.internal.kafka.eventing.knative.dev
 spec:
@@ -392,7 +468,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     knative.dev/crd-install: "true"
   name: consumergroups.internal.kafka.eventing.knative.dev
 spec:
@@ -463,7 +539,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 spec:
   group: eventing.knative.dev
   names:
@@ -546,15 +622,47 @@ spec:
               type: object
               properties:
                 address:
-                  description: 'Kafka Sink is Addressable. It exposes the endpoint as an URI to get events delivered to a Kafka topic.'
+                  description: Kafka Sink is Addressable. It exposes the endpoint as an URI to get events delivered into the Kafka topic.
                   type: object
                   properties:
+                    name:
+                      type: string
                     url:
                       type: string
+                    CACerts:
+                      type: string
+                    audience:
+                      type: string
+                addresses:
+                  description: Kafka Sink is Addressable. It exposes the endpoints as URIs to get events delivered into the Kafka topic.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                      CACerts:
+                        type: string
+                      audience:
+                        type: string
                 annotations:
                   description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
+                policies:
+                  description: List of applied EventPolicies
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      apiVersion:
+                        description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                        type: string
+                      name:
+                        description: The name of the applied EventPolicy
+                        type: string
                 conditions:
                   description: 'Conditions the latest available observations of a resource''s current state.'
                   type: array
@@ -627,7 +735,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -698,9 +806,6 @@ spec:
                       description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
                       type: object
                       properties:
-                        CACerts:
-                          description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
-                          type: string
                         ref:
                           description: Ref points to an Addressable.
                           type: object
@@ -728,6 +833,12 @@ spec:
                               type: string
                         uri:
                           description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                        CACerts:
+                          description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                          type: string
+                        audience:
+                          description: Audience is the OIDC audience for the deadLetterSink.
                           type: string
                     retry:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
@@ -882,9 +993,6 @@ spec:
                   description: Sink is a reference to an object that will resolve to a uri to use as the sink.
                   type: object
                   properties:
-                    CACerts:
-                      description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
-                      type: string
                     ref:
                       description: Ref points to an Addressable.
                       type: object
@@ -912,6 +1020,12 @@ spec:
                           type: string
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                    CACerts:
+                      description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                      type: string
+                    audience:
+                      description: Audience is the OIDC audience for the sink.
                       type: string
                 topics:
                   description: Topic topics to consume messages from
@@ -1003,6 +1117,420 @@ spec:
                 sinkUri:
                   description: SinkURI is the current active sink URI that has been configured for the Source.
                   type: string
+                sinkAudience:
+                  description: SinkAudience is the OIDC audience of the sink.
+                  type: string
+                auth:
+                  description: Auth provides the relevant information for OIDC authentication.
+                  type: object
+                  properties:
+                    serviceAccountName:
+                      description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                      type: string
+      subresources:
+        status: {}
+        scale:
+          # specReplicasPath defines the JSONPath inside of a custom resource that corresponds to Scale.Spec.Replicas.
+          specReplicasPath: .spec.consumers
+          # statusReplicasPath defines the JSONPath inside of a custom resource that corresponds to Scale.Status.Replicas.
+          statusReplicasPath: .status.consumers
+          # labelSelectorPath defines the JSONPath inside of a custom resource that corresponds to Scale.Status.Selector
+          labelSelectorPath: .status.selector
+      additionalPrinterColumns:
+        - name: Topics
+          type: string
+          jsonPath: ".spec.topics"
+        - name: BootstrapServers
+          type: string
+          jsonPath: ".spec.bootstrapServers"
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+    - name: v1
+      served: true
+      storage: false
+      schema:
+        openAPIV3Schema:
+          description: KafkaSource is the Schema for the kafkasources API.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: KafkaSourceSpec defines the desired state of the KafkaSource.
+              type: object
+              required:
+                - bootstrapServers
+                - topics
+              properties:
+                bootstrapServers:
+                  description: Bootstrap servers are the Kafka servers the consumer will connect to.
+                  type: array
+                  items:
+                    type: string
+                ceOverrides:
+                  description: CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.
+                  type: object
+                  properties:
+                    extensions:
+                      description: Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.
+                      type: object
+                      additionalProperties:
+                        type: string
+                consumerGroup:
+                  description: ConsumerGroupID is the consumer group ID.
+                  type: string
+                consumers:
+                  description: "Number of desired consumers running in the consumer group. Defaults to 1. \n This is a pointer to distinguish between explicit zero and not specified."
+                  type: integer
+                  format: int32
+                delivery:
+                  description: Delivery contains the delivery spec for this source
+                  type: object
+                  properties:
+                    backoffDelay:
+                      description: "BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601 \n For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>."
+                      type: string
+                    backoffPolicy:
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                      type: string
+                    deadLetterSink:
+                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                      type: object
+                      properties:
+                        ref:
+                          description: Ref points to an Addressable.
+                          type: object
+                          required:
+                            - kind
+                            - name
+                          properties:
+                            address:
+                              description: Address points to a specific Address Name.
+                              type: string
+                            apiVersion:
+                              description: API version of the referent.
+                              type: string
+                            group:
+                              description: 'Group of the API, without the version of the group. This can be used as an alternative to the APIVersion, and then resolved using ResolveGroup. Note: This API is EXPERIMENTAL and might break anytime. For more details: https://github.com/knative/eventing/issues/5086'
+                              type: string
+                            kind:
+                              description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                              type: string
+                            namespace:
+                              description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                              type: string
+                        uri:
+                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                        CACerts:
+                          description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                          type: string
+                        audience:
+                          description: Audience is the OIDC audience for the deadLetterSink.
+                          type: string
+                    retry:
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                      type: integer
+                      format: int32
+                    retryAfterMax:
+                      description: "RetryAfterMax provides an optional upper bound on the duration specified in a \"Retry-After\" header when calculating backoff times for retrying 429 and 503 response codes.  Setting the value to zero (\"PT0S\") can be used to opt-out of respecting \"Retry-After\" header values altogether. This value only takes effect if \"Retry\" is configured, and also depends on specific implementations (Channels, Sources, etc.) choosing to provide this capability. \n Note: This API is EXPERIMENTAL and might be changed at anytime. While this experimental feature is in the Alpha/Beta stage, you must provide a valid value to opt-in for supporting \"Retry-After\" headers.  When the feature becomes Stable/GA \"Retry-After\" headers will be respected by default, and you can choose to specify \"PT0S\" to opt-out of supporting \"Retry-After\" headers. For more details: https://github.com/knative/eventing/issues/5811 \n More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601"
+                      type: string
+                    timeout:
+                      description: "Timeout is the timeout of each single request. The value must be greater than 0. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601 \n Note: This API is EXPERIMENTAL and might break anytime. For more details: https://github.com/knative/eventing/issues/5148"
+                      type: string
+                initialOffset:
+                  description: InitialOffset is the Initial Offset for the consumer group. should be earliest or latest
+                  type: string
+                net:
+                  type: object
+                  properties:
+                    sasl:
+                      type: object
+                      properties:
+                        enable:
+                          type: boolean
+                        password:
+                          description: Password is the Kubernetes secret containing the SASL password.
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                        type:
+                          description: Type of saslType, defaults to plain (vs SCRAM-SHA-512 or SCRAM-SHA-256)
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                        user:
+                          description: User is the Kubernetes secret containing the SASL username.
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                    tls:
+                      type: object
+                      properties:
+                        caCert:
+                          description: CACert is the Kubernetes secret containing the server CA cert.
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                        cert:
+                          description: Cert is the Kubernetes secret containing the client certificate.
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                        enable:
+                          type: boolean
+                        key:
+                          description: Key is the Kubernetes secret containing the client key.
+                          type: object
+                          properties:
+                            secretKeyRef:
+                              description: The Secret key to select from.
+                              type: object
+                              required:
+                                - key
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              x-kubernetes-map-type: atomic
+                ordering:
+                  description: Ordering is the type of the consumer verticle. Should be ordered or unordered. By default, it is ordered.
+                  type: string
+                sink:
+                  description: Sink is a reference to an object that will resolve to a uri to use as the sink.
+                  type: object
+                  properties:
+                    ref:
+                      description: Ref points to an Addressable.
+                      type: object
+                      required:
+                        - kind
+                        - name
+                      properties:
+                        address:
+                          description: Address points to a specific Address Name.
+                          type: string
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        group:
+                          description: 'Group of the API, without the version of the group. This can be used as an alternative to the APIVersion, and then resolved using ResolveGroup. Note: This API is EXPERIMENTAL and might break anytime. For more details: https://github.com/knative/eventing/issues/5086'
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                    uri:
+                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                    CACerts:
+                      description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                      type: string
+                    audience:
+                      description: Audience is the OIDC audience for the sink.
+                      type: string
+                topics:
+                  description: Topic topics to consume messages from
+                  type: array
+                  items:
+                    type: string
+            status:
+              description: KafkaSourceStatus defines the observed state of KafkaSource.
+              type: object
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                ceAttributes:
+                  description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
+                  type: array
+                  items:
+                    description: CloudEventAttributes specifies the attributes that a Source uses as part of its CloudEvents.
+                    type: object
+                    properties:
+                      source:
+                        description: Source is the CloudEvents source attribute.
+                        type: string
+                      type:
+                        description: Type refers to the CloudEvent type attribute.
+                        type: string
+                claims:
+                  description: Claims consumed by this KafkaSource instance
+                  type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                consumers:
+                  description: Total number of consumers actually running in the consumer group.
+                  type: integer
+                  format: int32
+                maxAllowedVReplicas:
+                  type: integer
+                  format: int32
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                placements:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      podName:
+                        description: PodName is the name of the pod where the resource is placed
+                        type: string
+                      vreplicas:
+                        description: VReplicas is the number of virtual replicas assigned to in the pod
+                        type: integer
+                        format: int32
+                selector:
+                  description: Use for labelSelectorPath when scaling Kafka source
+                  type: string
+                sinkCACerts:
+                  description: SinkCACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                  type: string
+                sinkUri:
+                  description: SinkURI is the current active sink URI that has been configured for the Source.
+                  type: string
+                sinkAudience:
+                  description: SinkAudience is the OIDC audience of the sink.
+                  type: string
+                auth:
+                  description: Auth provides the relevant information for OIDC authentication.
+                  type: object
+                  properties:
+                    serviceAccountName:
+                      description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                      type: string
       subresources:
         status: {}
         scale:
@@ -1043,7 +1571,7 @@ spec:
       conversionReviewVersions: ["v1", "v1beta1"]
       clientConfig:
         service:
-          name: kafka-source-webhook
+          name: kafka-webhook-eventing
           namespace: knative-eventing
 
 ---
@@ -1067,7 +1595,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -1100,7 +1628,7 @@ metadata:
   name: config-kafka-source-defaults
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
   annotations:
     knative.dev/example-checksum: "b6ed351d"
 data:
@@ -1160,15 +1688,14 @@ metadata:
   name: config-kafka-autoscaler
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   class: "keda.autoscaling.knative.dev"
   min-scale: "0"
   max-scale: "50"
   polling-interval: "10"
-  cooldown-period: "300"
+  cooldown-period: "30"
   lag-threshold: "100"
-  activation-lag-threshold: "1"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -1191,7 +1718,7 @@ metadata:
   name: config-kafka-descheduler
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   predicates: |
     []
@@ -1214,7 +1741,7 @@ metadata:
   name: config-kafka-features
   namespace: knative-eventing
   annotations:
-    knative.dev/example-checksum: "1192895d"
+    knative.dev/example-checksum: "cf3393de"
 data:
   _example: |-
     ################################
@@ -1234,37 +1761,37 @@ data:
     # Controls whether the dispatcher should use the rate limiter based on the number of virtual replicas.
     # 1. Enabled: The rate limiter is applied.
     # 2. Disabled: The rate limiter is not applied.
-    dispatcher.rate-limiter: "disabled"
+    dispatcher-rate-limiter: "disabled"
     # Controls whether the dispatcher should record additional metrics.
     # 1. Enabled: The metrics are recorded.
     # 2. Disabled: The metrics are not recorded.
-    dispatcher.ordered-executor-metrics: "disabled"
+    dispatcher-ordered-executor-metrics: "disabled"
     # Controls whether the controller should autoscale consumer resources with KEDA
     # 1. Enabled: KEDA autoscaling of consumers will be setup.
     # 2. Disabled: KEDA autoscaling of consumers will not be setup.
-    controller.autoscaler: "disabled"
+    controller-autoscaler-keda: "disabled"
     # The Go text/template used to generate consumergroup ID for triggers.
     # The template can reference the trigger Kubernetes metadata only.
-    triggers.consumergroup.template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
+    triggers-consumergroup-template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
     # The Go text/template used to generate topics for Brokers.
     # The template can reference the broker Kubernetes metadata only.
-    brokers.topic.template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
+    brokers-topic-template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
     # The Go text/template used to generate topics for Channels.
     # The template can reference the channel Kubernetes metadata only.
-    channels.topic.template: "knative-channel-{{ .Namespace }}-{{ .Name }}"
-  dispatcher.rate-limiter: "disabled"
-  dispatcher.ordered-executor-metrics: "disabled"
-  controller.autoscaler: "disabled"
-  triggers.consumergroup.template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
-  brokers.topic.template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
-  channels.topic.template: "knative-messaging-kafka.{{ .Namespace }}.{{ .Name }}"
+    channels-topic-template: "knative-channel-{{ .Namespace }}-{{ .Name }}"
+  dispatcher-rate-limiter: "disabled"
+  dispatcher-ordered-executor-metrics: "disabled"
+  controller-autoscaler-keda: "disabled"
+  triggers-consumergroup-template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
+  brokers-topic-template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
+  channels-topic-template: "knative-messaging-kafka.{{ .Namespace }}.{{ .Name }}"
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
   name: config-kafka-leader-election
   namespace: knative-eventing
   annotations:
@@ -1331,7 +1858,7 @@ metadata:
   name: config-kafka-scheduler
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   predicates: |
     [
@@ -1371,15 +1898,20 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 data:
   config.xml: |
     <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
       </appender>
+      <appender name="async" class="ch.qos.logback.classic.AsyncAppender">
+          <appender-ref ref="jsonConsoleAppender" />
+          <neverBlock>true</neverBlock>
+          <maxFlushTime>1000</maxFlushTime>
+      </appender>
       <root level="INFO">
-        <appender-ref ref="jsonConsoleAppender"/>
+        <appender-ref ref="async"/>
       </root>
     </configuration>
 
@@ -1428,7 +1960,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -1488,7 +2020,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -1531,7 +2063,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -1568,7 +2100,7 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 rules:
   - apiGroups:
       - ""
@@ -1687,6 +2219,13 @@ rules:
       - update
       - create
       - delete
+  # To grant NamespacedBroker permissions to create OIDC tokens
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts/token
+    verbs:
+      - create
   # Scheduler permissions
   - apiGroups:
       - ""
@@ -1707,6 +2246,8 @@ rules:
       - watch
       - update
       - patch
+      - create
+      - delete
   # Internal APIs
   - apiGroups:
       - "internal.kafka.eventing.knative.dev"
@@ -1741,6 +2282,8 @@ rules:
       - "triggers/status"
       - "kafkasinks"
       - "kafkasinks/status"
+      - "eventpolicies"
+      - "eventpolicies/status"
     verbs:
       - list
       - get
@@ -1756,6 +2299,16 @@ rules:
       - "kafkasinks/finalizers"
     verbs:
       - update
+  # resources needed to grant eventtype autocreate rbac to namespaced data plane component
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - "eventtypes"
+    verbs:
+      - get
+      - list
+      - watch
+      - create
   # messaging.knative.dev resources and finalizers we care about.
   - apiGroups:
       - messaging.knative.dev
@@ -1837,7 +2390,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -1858,7 +2411,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1873,7 +2426,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1904,7 +2457,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     app.kubernetes.io/component: kafka-controller
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -1916,7 +2469,7 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+        app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
         app.kubernetes.io/component: kafka-controller
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -1942,7 +2495,7 @@ spec:
               weight: 100
       containers:
         - name: controller
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:a83602b7d4177cb59a2e948665ca6a8c3ea87ca1bedb86d6249a2bca191f35b5
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:a58d8adb64a35155f375895ba1efad78f58657cf24f55024b8de004cf0775bc1
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
@@ -2039,6 +2592,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: ENABLE_SARAMA_LOGGER
+              value: "false"
+            - name: ENABLE_SARAMA_DEBUG_LOGGER
+              value: "false"
+            - name: ENABLE_SARAMA_CLIENT_POOL
+              value: "true"
           ports:
             - containerPort: 9090
               name: metrics
@@ -2077,7 +2636,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -2158,6 +2717,10 @@ rules:
     verbs:
       - get
       - list
+  # Necessary for conversion webhook.
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "create", "update", "patch", "watch"]
 
 ---
 # Copyright 2020 The Knative Authors
@@ -2179,7 +2742,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -2200,7 +2763,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -2230,7 +2793,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -2262,7 +2825,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: pods.defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 webhooks:
   # Dispatcher pods webhook config.
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -2304,7 +2867,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 # The data is populated at install time.
 
 ---
@@ -2327,7 +2890,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -2361,7 +2924,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     app.kubernetes.io/component: kafka-webhook-eventing
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -2372,7 +2935,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+        app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
         app.kubernetes.io/component: kafka-webhook-eventing
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -2392,7 +2955,7 @@ spec:
       containers:
         - name: kafka-webhook-eventing
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:76bb75f70cc505315bc43d3301f93d90c72475e5b9e1fcebee57cd5d609092cc
+          image: gcr.io/knative-nightly/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:7819fe5124bf3748f16743a734dec82aa38597b849576fed6453aef3299e70a4
           resources:
             requests:
               cpu: 20m
@@ -2434,7 +2997,7 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
-          readinessProbe: &probe
+          readinessProbe:
             periodSeconds: 1
             httpGet:
               scheme: HTTPS
@@ -2443,7 +3006,13 @@ spec:
                 - name: k-kubelet-probe
                   value: "webhook"
           livenessProbe:
-            !!merge <<: *probe
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "webhook"
             initialDelaySeconds: 20
       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
       # high value that we respect whatever value it has configured for the lame duck grace period.
@@ -2456,7 +3025,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    app.kubernetes.io/version: "8a22c92df90fbe82c8714d00c5ee5842cd3a37b9"
+    app.kubernetes.io/version: "5a9465023fdc7ca44eb27713077d0114ed7f3838"
     app.kubernetes.io/component: kafka-webhook-eventing
     app.kubernetes.io/name: knative-eventing
 spec:
