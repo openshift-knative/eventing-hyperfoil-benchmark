@@ -54,6 +54,17 @@ rm -rf tests/broker/kafka
   --delivery-order unordered
 
 ./bin/kafka_broker_generator.py \
+  --num-brokers 20 \
+  --num-triggers 10 \
+  --resources-output-dir tests/broker/kafka/p10-r3-unord-b20-t10-32kb-lp/resources \
+  --hf-output-dir tests/broker/kafka/p10-r3-unord-b20-t10-32kb-lp \
+  --name-prefix p10-r3-unord-b20-t10-32kb-lp \
+  --payload-file payloads/payload.36KB.txt \
+  --delivery-order unordered \
+  --receiver-fault-min-sleep-duration 10s \
+  --receiver-fault-max-sleep-duration 550s
+
+./bin/kafka_broker_generator.py \
   --num-brokers 10 \
   --num-triggers 10 \
   --resources-output-dir tests/broker/kafka/p10-r3-unord-b10-t10-64kb/resources \
