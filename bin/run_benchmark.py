@@ -21,6 +21,7 @@ import json
 import ssl
 import time
 import sys
+import ssl
 from http import client
 from typing import Dict
 
@@ -42,10 +43,10 @@ def do_request(method: str, path: str, body: any = None, headers: Dict[str, str]
     print("Doing request", path)
     conn = None
     if hf_server_address.startswith("https"):
+        context = ssl._create_unverified_context()
         conn = client.HTTPSConnection(
             host=hf_server_address[len("https://"):],
-            context=ctx,
-            check_hostname=False,
+            context=context
         )
     else:
         conn = client.HTTPConnection(
