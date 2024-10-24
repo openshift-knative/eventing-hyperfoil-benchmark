@@ -37,6 +37,10 @@ parser.add_argument('--steady_state-duration', type=int, default=300,
                     dest='steady_state_duration', help='steady_state_duration in sec')
 parser.add_argument('--max-iterations', type=int, default=5,
                     dest='max_iterations', help='max_iterations')
+parser.add_argument('--receiver-fault-min-sleep-duration', type=str, default='',
+                    dest='receiver_fault_min_sleep_duration', help='receiver_fault_min_sleep_duration')
+parser.add_argument('--receiver-fault-max-sleep-duration', type=str, default='',
+                    dest='receiver_fault_max_sleep_duration', help='receiver_fault_max_sleep_duration')
 args = parser.parse_args()
 
 triggers = []
@@ -90,6 +94,13 @@ spec:
     for t_idx in range(args.num_triggers):
         trigger_name = f"{broker_name}-trigger-{t_idx}"
         triggers.append(trigger_name)
+        fault = ""
+        if args.receiver_fault_max_sleep_duration != '' and args.receiver_fault_min_sleep_duration != '':
+            fault = f"""
+      fault:
+        minSleepDuration: {args.receiver_fault_min_sleep_duration}
+        maxSleepDuration: {args.receiver_fault_max_sleep_duration}"""
+
         trigger_manifests = f"""
 ---
 apiVersion: eventing.knative.dev/v1
@@ -139,7 +150,7 @@ data:
     receiver:
       port: 8080
       timeout: 5m
-      maxDuplicatesPercentage: 1
+      maxDuplicatesPercentage: 1{fault}
     duration: 10m
     timeout: 1m
 
