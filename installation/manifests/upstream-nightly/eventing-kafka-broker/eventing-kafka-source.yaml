@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -112,7 +112,7 @@ data:
     enable.auto.commit=false
     exclude.internal.topics=true
     fetch.max.bytes=52428800
-    isolation.level=read_uncommitted
+    isolation.level=read_committed
     max.poll.interval.ms=300000
     max.poll.records=50
     partition.assignment.strategy=org.apache.kafka.clients.consumer.StickyAssignor
@@ -178,7 +178,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
 rules:
   - apiGroups:
       - ""
@@ -215,7 +215,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -236,7 +236,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -267,7 +267,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
     app.kubernetes.io/component: kafka-source-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -281,7 +281,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+        app.kubernetes.io/version: "4f166b7ec1d2c5a81e7584fd02f8a00023bef00c"
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/kind: kafka-dispatcher
@@ -308,7 +308,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher-loom@sha256:3873db4ae8df2039e5f04d28db9fc5a2ad437f7ed0a84bc374033e4099b9e22c
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher-loom@sha256:d88df737ffbdadef01714a9a5f104266ddaa04b47e6af0d9f62d098e4f12f983
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
