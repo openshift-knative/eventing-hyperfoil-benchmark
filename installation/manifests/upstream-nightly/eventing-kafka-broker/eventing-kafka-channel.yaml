@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
   annotations:
     knative.dev/example-checksum: "6ce544b6"
 data:
@@ -95,7 +95,6 @@ data:
     linger.ms=0
     max.block.ms=60000
     max.request.size=1048576
-    partitioner.class=org.apache.kafka.clients.producer.internals.DefaultPartitioner
     receive.buffer.bytes=-1
     request.timeout.ms=2000
     enable.idempotence=false
@@ -197,7 +196,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 rules:
   - apiGroups:
       - ""
@@ -244,7 +243,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -265,7 +264,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -296,7 +295,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
     app.kubernetes.io/component: kafka-channel-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -310,7 +309,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+        app.kubernetes.io/version: "20260904-e1ba2cad2"
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/kind: kafka-dispatcher
@@ -337,7 +336,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: kafka-channel-dispatcher
-          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher-loom@sha256:3873db4ae8df2039e5f04d28db9fc5a2ad437f7ed0a84bc374033e4099b9e22c
+          image: gcr.io/knative-nightly/knative-kafka-broker-dispatcher-loom@sha256:2e3b7aff1563c92b6567e633f4f9c7e2f04a863a0d341d4aea564baa214f89df
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -351,8 +350,8 @@ spec:
             - mountPath: /etc/logging
               name: kafka-config-logging
               readOnly: true
-            - mountPath: /etc/tracing
-              name: config-tracing
+            - mountPath: /etc/observability
+              name: config-observability
               readOnly: true
           ports:
             - containerPort: 9090
@@ -379,16 +378,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
-            - name: METRICS_PATH
-              value: /metrics
-            - name: METRICS_PORT
-              value: "9090"
             - name: METRICS_PUBLISH_QUANTILES
               value: "false"
             - name: METRICS_JVM_ENABLED
               value: "false"
-            - name: CONFIG_TRACING_PATH
-              value: "/etc/tracing"
+            - name: CONFIG_OBSERVABILITY_PATH
+              value: "/etc/observability"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
             - name: HTTP2_DISABLE
               value: "true"
@@ -407,18 +402,21 @@ spec:
               memory: 1000Mi
           livenessProbe:
             failureThreshold: 3
-            tcpSocket:
-              port: 9090
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "ls /proc/1"
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
-            httpGet:
-              port: 9090
-              path: /metrics
-              scheme: HTTP
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
@@ -442,9 +440,12 @@ spec:
         - name: kafka-config-logging
           configMap:
             name: kafka-config-logging
-        - name: config-tracing
+        - name: config-observability
           configMap:
-            name: config-tracing
+            name: config-observability
+        - name: contract-resources
+          # only a placeholder. Will be replaced later by our pod defaulting webhook
+          emptyDir: {}
       restartPolicy: Always
       dnsConfig:
         options:
@@ -471,7 +472,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -483,7 +484,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+        app.kubernetes.io/version: "20260904-e1ba2cad2"
         app.kubernetes.io/component: kafka-channel-receiver
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/kind: kafka-receiver
@@ -510,7 +511,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: kafka-channel-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver-loom@sha256:ff9f716ad3a35370264a9bdd88b5c62ed0f5af8bc93fa20f37a5cacb26883dda
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver-loom@sha256:bbd47db074950464f283999a70a0e2f4896503f7907af8acd56b44697c71632f
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -524,8 +525,8 @@ spec:
             - mountPath: /etc/logging
               name: kafka-channel-config-logging
               readOnly: true
-            - mountPath: /etc/tracing
-              name: config-tracing
+            - mountPath: /etc/observability
+              name: config-observability
               readOnly: true
             - mountPath: /etc/features
               name: config-features
@@ -564,16 +565,12 @@ spec:
               value: /healthz
             - name: READINESS_PROBE_PATH
               value: /readyz
-            - name: METRICS_PATH
-              value: /metrics
-            - name: METRICS_PORT
-              value: "9090"
             - name: METRICS_PUBLISH_QUANTILES
               value: "false"
             - name: METRICS_JVM_ENABLED
               value: "false"
-            - name: CONFIG_TRACING_PATH
-              value: "/etc/tracing"
+            - name: CONFIG_OBSERVABILITY_PATH
+              value: "/etc/observability"
             - name: CONFIG_FEATURES_PATH
               value: "/etc/features"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
@@ -630,9 +627,9 @@ spec:
         - name: kafka-channel-config-logging
           configMap:
             name: kafka-config-logging
-        - name: config-tracing
+        - name: config-observability
           configMap:
-            name: config-tracing
+            name: config-observability
         - name: config-features
           configMap:
             name: config-features
@@ -649,7 +646,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:

@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -74,7 +74,6 @@ data:
     linger.ms=0
     max.block.ms=60000
     max.request.size=1048576
-    partitioner.class=org.apache.kafka.clients.producer.internals.DefaultPartitioner
     receive.buffer.bytes=-1
     request.timeout.ms=2000
     enable.idempotence=false
@@ -111,7 +110,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 rules:
   - apiGroups:
       - ""
@@ -152,7 +151,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -173,7 +172,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -204,7 +203,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -216,7 +215,7 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+        app.kubernetes.io/version: "20260904-e1ba2cad2"
         app.kubernetes.io/component: kafka-sink-receiver
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -242,7 +241,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: kafka-sink-receiver
-          image: gcr.io/knative-nightly/knative-kafka-broker-receiver-loom@sha256:ff9f716ad3a35370264a9bdd88b5c62ed0f5af8bc93fa20f37a5cacb26883dda
+          image: gcr.io/knative-nightly/knative-kafka-broker-receiver-loom@sha256:bbd47db074950464f283999a70a0e2f4896503f7907af8acd56b44697c71632f
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config
@@ -256,8 +255,8 @@ spec:
             - mountPath: /etc/logging
               name: kafka-sink-config-logging
               readOnly: true
-            - mountPath: /etc/tracing
-              name: config-tracing
+            - mountPath: /etc/observability
+              name: config-observability
               readOnly: true
             - mountPath: /etc/features
               name: config-features
@@ -296,16 +295,12 @@ spec:
               value: /healthz
             - name: READINESS_PROBE_PATH
               value: /readyz
-            - name: METRICS_PATH
-              value: /metrics
-            - name: METRICS_PORT
-              value: "9090"
             - name: METRICS_PUBLISH_QUANTILES
               value: "false"
             - name: METRICS_JVM_ENABLED
               value: "false"
-            - name: CONFIG_TRACING_PATH
-              value: "/etc/tracing"
+            - name: CONFIG_OBSERVABILITY_PATH
+              value: "/etc/observability"
             - name: CONFIG_FEATURES_PATH
               value: "/etc/features"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
@@ -362,9 +357,9 @@ spec:
         - name: kafka-sink-config-logging
           configMap:
             name: kafka-config-logging
-        - name: config-tracing
+        - name: config-observability
           configMap:
-            name: config-tracing
+            name: config-observability
         - name: config-features
           configMap:
             name: config-features
@@ -381,7 +376,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: "276bcfc97f94ea8b449e6db2370a71ceb6f41c49"
+    app.kubernetes.io/version: "20260904-e1ba2cad2"
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
